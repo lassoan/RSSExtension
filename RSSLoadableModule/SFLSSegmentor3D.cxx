@@ -14,6 +14,9 @@
 #include <vtkVersion.h>
 #include <vtkImageData.h>
 
+#include "vtkImageCast.h"
+
+
 // dbg
 #include "vtkMetaImageWriter.h"
 
@@ -80,10 +83,14 @@ void CSFLSSegmentor3D::setNumIter(unsigned long n)
 /* ============================================================
    setImage    */
 
-void CSFLSSegmentor3D::setImage(vtkImageDataPointer img)
+void CSFLSSegmentor3D::setImage(vtkImageData* img)
 {
-    mp_img = img;
+    vtkImageCast* castFilter = vtkImageCast::New();
+    castFilter->SetInput(img);
+    castFilter->SetOutputScalarTypeToShort();
+    castFilter->Update();
 
+    mp_img = castFilter->GetOutput();
     /* TODO This is to avoid the cases that the starting extent is not 0, 0, 0.
 This should not happen if the images are freshly loaded from file. Buy may happen when the input images are cropped from another image in memory.
 */
@@ -172,7 +179,7 @@ void CSFLSSegmentor3D::setCurvatureWeight(double a)
 
 /* ============================================================
    setMask    */
-void CSFLSSegmentor3D::setMask(vtkImageDataPointer mask)
+void CSFLSSegmentor3D::setMask(vtkImageData* mask)
 {
     mp_mask = mask;
     int* size = mask->GetDimensions();
@@ -1470,7 +1477,7 @@ void CSFLSSegmentor3D::initializeSFLSFromMask()
 }
 
 /* getLevelSetFunction */
-CSFLSSegmentor3D::vtkImageDataPointer CSFLSSegmentor3D::getLevelSetFunction()
+vtkImageData* CSFLSSegmentor3D::getLevelSetFunction()
 {
     //   if (!m_done)
     //     {

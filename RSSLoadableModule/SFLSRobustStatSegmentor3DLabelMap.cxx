@@ -41,7 +41,7 @@ CSFLSRobustStatSegmentor3DLabelMap::basicInit()
 /* ============================================================  */
 
 void
-CSFLSRobustStatSegmentor3DLabelMap::setInputLabelImage(vtkImageDataPointer l)
+CSFLSRobustStatSegmentor3DLabelMap::setInputLabelImage(vtkImageData* l)
 {
     vtkImageCast* castFilter = vtkImageCast::New();
     castFilter->SetInput(l);
@@ -225,7 +225,7 @@ CSFLSRobustStatSegmentor3DLabelMap::initFeatureImage()
 
     for (long ifeature = 0; ifeature < m_numberOfFeature; ++ifeature)
     {
-        vtkImageDataPointer fimg = vtkImageData::New();
+        vtkImageData* fimg = vtkImageData::New();
 
         fimg->SetDimensions(mp_img->GetDimensions());
         fimg->SetOrigin(mp_img->GetOrigin());

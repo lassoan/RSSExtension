@@ -25,7 +25,7 @@ public:
   typedef float LevelSetImagePixelType;
   typedef unsigned char NeighborLabelImagePixelType;
 
-    typedef vtkImageData* vtkImageDataPointer;
+//    typedef vtkImageData* vtkImageDataPointer;
 
     typedef short LabelPixelType;
     typedef unsigned char MaskPixelType;
@@ -41,8 +41,8 @@ public:
 
     void setNumIter(unsigned long n);
 
-    void setImage(vtkImageDataPointer img);
-    void setMask(vtkImageDataPointer mask);
+    void setImage(vtkImageData* img);
+    void setMask(vtkImageData* mask);
 
     virtual void computeForce() = 0;
 
@@ -71,24 +71,24 @@ public:
 
     void setCurvatureWeight(double a);
 
-    vtkImageDataPointer getLevelSetFunction();
+    vtkImageData* getLevelSetFunction();
 
     /* ============================================================
                        data
     ===============================================================*/
-    vtkImageDataPointer mp_img; // current PDF computation assumes this to be an integer valued image, like short
+    vtkImageData* mp_img; // current PDF computation assumes this to be an integer valued image, like short
     TPixel* mp_img_ptr; //pointing to the first element of the image
 
-    vtkImageDataPointer mp_label; // short type
+    vtkImageData* mp_label; // short type
     LabelImagePixelType* mp_label_ptr; //pointing to the first element of the label image
 
-    vtkImageDataPointer mp_mask; // unsigned char, 0, non-0 mask for object
+    vtkImageData* mp_mask; // unsigned char, 0, non-0 mask for object
     MaskPixelType* mp_mask_ptr; //pointing to the first element of the mask image
 
-    vtkImageDataPointer mp_phi; // float type is enough, no need for double
+    vtkImageData* mp_phi; // float type is enough, no need for double
     LevelSetPixelType* mp_phi_ptr; //pointing to the first element of the level set image
 
-  vtkImageDataPointer mp_label_mask; // 0-1 mask always corresponding to the 0 and negative region of mp_label
+  vtkImageData* mp_label_mask; // 0-1 mask always corresponding to the 0 and negative region of mp_label
 //  LabelImagePixelType* mp_label_mask_buffer_ptr;
 
     std::vector< LevelSetPixelType > m_force;

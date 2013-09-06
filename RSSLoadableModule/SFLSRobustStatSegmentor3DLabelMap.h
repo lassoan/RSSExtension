@@ -42,7 +42,7 @@ public:
      ----------------------------------------------------------------------
      ---------------------------------------------------------------------- */
 
-    typedef SuperClassType::vtkImageDataPointer vtkImageDataPointer;
+//    typedef SuperClassType::vtkImageDataPointer vtkImageDataPointer;
     typedef float FeatureImagePixelType;
     //  typedef typename SuperClassType::TCharImage TLabelImage;
     //  typedef typename TLabelImage::Pointer TLabelImagePointer;
@@ -65,7 +65,7 @@ public:
    * functions
    * ============================================================*/
 
-    void setInputLabelImage(vtkImageDataPointer l);
+    void setInputLabelImage(vtkImageData* l);
 
     void doSegmenation();
 
@@ -81,7 +81,7 @@ public:
 protected:
     /* data */
     //  TLabelImagePointer m_inputLabelImage;
-    vtkImageDataPointer m_inputLabelImage;
+    vtkImageData* m_inputLabelImage;
   LabelImagePixelType* m_inputLabelImage_buffer_ptr;
     std::vector<std::vector<long> > m_seeds; // in IJK
 
@@ -99,8 +99,8 @@ protected:
   */
     //  TLabelImagePointer m_featureComputed; // if feature at this point is computed, then is 1
     typedef unsigned char m_featureComputed_pixel_type;
-    vtkImageDataPointer m_featureComputed; // if feature at this point is computed, then is 1
-    std::vector<vtkImageDataPointer> m_featureImageList;
+    vtkImageData* m_featureComputed; // if feature at this point is computed, then is 1
+    std::vector<vtkImageData*> m_featureImageList;
 
 
     double m_kernelWidthFactor; // kernel_width = empirical_std/m_kernelWidthFactor, Eric has it at 10.0

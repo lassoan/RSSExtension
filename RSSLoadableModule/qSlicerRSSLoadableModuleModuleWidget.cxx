@@ -86,7 +86,7 @@ qSlicerRSSLoadableModuleModuleWidget::qSlicerRSSLoadableModuleModuleWidget(QWidg
 {
     m_evolutionPaused = 0;
 
-//    m_UIRefreshInterval = 201;
+    //    m_UIRefreshInterval = 201;
 }
 
 //-----------------------------------------------------------------------------
@@ -222,7 +222,7 @@ void qSlicerRSSLoadableModuleModuleWidget::applyPushButtonClicked()
     castFilter1->SetInput(inputLabelVolumeNode->GetImageData());
     castFilter1->SetOutputScalarTypeToShort(); // coz RSS input label is short pixel type
     castFilter1->Update();
-//    vtkImageData* inputLabelImageVtk = inputLabelVolumeNode->GetImageData();
+    //    vtkImageData* inputLabelImageVtk = inputLabelVolumeNode->GetImageData();
     vtkImageData* newInputLabelImageVtk = preprocessLabelMap(castFilter1->GetOutput(), labelValue);
 
     qSlicerApplication * app = qSlicerApplication::application();
@@ -242,7 +242,7 @@ void qSlicerRSSLoadableModuleModuleWidget::applyPushButtonClicked()
     m_rssPointer->setIntensityHomogeneity(intensityHomogeneity);
     m_rssPointer->setCurvatureWeight(curvatureWeight / 1.5);
 
-//    m_rssPointer->doSegmenation();
+    //    m_rssPointer->doSegmenation();
     m_rssPointer->doSegmenationBeforeIteration();
 
     d->pauseButton->setEnabled(true);
@@ -255,8 +255,8 @@ void qSlicerRSSLoadableModuleModuleWidget::applyPushButtonClicked()
     outputVolumeNode->SetAndObserveImageData(m_rssPointer->mp_label_mask);
     outputVolumeNode->SetLabelMap(1);
 
-//    outputVolumeNode->SetAndObserveImageData(m_rssPointer->mp_label_mask);
-//    outputVolumeNode->SetAndObserveImageData(m_rssPointer->mp_label);
+    //    outputVolumeNode->SetAndObserveImageData(m_rssPointer->mp_label_mask);
+    //    outputVolumeNode->SetAndObserveImageData(m_rssPointer->mp_label);
 
     outputVolumeNode->SetDisplayVisibility(1);
 
@@ -268,9 +268,9 @@ void qSlicerRSSLoadableModuleModuleWidget::applyPushButtonClicked()
     selectionNode->SetActiveLabelVolumeID(outputVolumeNode->GetID());
     appLogic->PropagateVolumeSelection();
 
-std::cout<<"22222222222222222222222222 np = "<<m_rssPointer->mp_img->GetNumberOfPoints()<<std::endl<<std::flush;
+    std::cout<<"22222222222222222222222222 np = "<<m_rssPointer->mp_img->GetNumberOfPoints()<<std::endl<<std::flush;
 
-oneLevelSetIteration();
+    oneLevelSetIteration();
 
     QTimer::singleShot(m_UIRefreshInterval, this, SLOT(oneLevelSetIteration()));
 }
@@ -368,8 +368,10 @@ vtkImageData* qSlicerRSSLoadableModuleModuleWidget::preprocessLabelMap(vtkImageD
 
 void qSlicerRSSLoadableModuleModuleWidget::oneLevelSetIteration()
 {
+    std::cout<<"3333333333333333333333333 np = "<<m_rssPointer->mp_label_mask->GetNumberOfPoints()<<std::endl<<std::flush;
 
-    std::cout<<"3333333333333333333333333 np = "<<m_rssPointer->mp_img->GetNumberOfPoints()<<std::endl<<std::flush;
+//    std::cout<<"3333333333333333333333333 np = "<<m_rssPointer->mp_img->GetNumberOfPoints()<<std::endl<<std::flush;
+//    std::cout<<"000000000000000000000 np = "<<m_rssPointer->mp_->GetNumberOfPoints()<<std::endl<<std::flush;
 
 
     if (m_rssPointer->m_done || m_evolutionPaused)
@@ -387,6 +389,6 @@ void qSlicerRSSLoadableModuleModuleWidget::oneLevelSetIteration()
         vtkMRMLNode* outputNode = d->OutputLabelVolumeMRMLNodeComboBox->currentNode();
         outputNode->Modified();
 
-//        QTimer::singleShot(m_UIRefreshInterval, this, SLOT(oneLevelSetIteration()));
+                QTimer::singleShot(m_UIRefreshInterval, this, SLOT(oneLevelSetIteration()));
     }
 }
