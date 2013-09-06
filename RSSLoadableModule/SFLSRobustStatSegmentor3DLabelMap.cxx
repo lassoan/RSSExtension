@@ -13,7 +13,7 @@
 #include <fstream>
 // //DEBUG//
 
-#include <omp.h>
+//#include <omp.h>
 #include "vtkImageData.h"
 
 #include "vtkImageCast.h"
@@ -83,6 +83,9 @@ CSFLSRobustStatSegmentor3DLabelMap::setInputLabelImage(vtkImageDataPointer l)
 void
 CSFLSRobustStatSegmentor3DLabelMap::computeForce()
 {
+//    int np = mp_img->GetNumberOfPoints();
+//    std::cout<<"0 np = "<<np<<std::endl<<std::flush;
+
     double fmax = std::numeric_limits<double>::min();
     double kappaMax = std::numeric_limits<double>::min();
 
@@ -98,83 +101,42 @@ CSFLSRobustStatSegmentor3DLabelMap::computeForce()
             m_lzIterVct[iiizzz++] = itz;
     }
 
-    std::cout<<"77777777777777777\n"<<std::flush;
+//    std::cout<<"77777777777777777\n"<<std::flush;
 
-
-    //   int nt = 1;
-    //   std::vector<double> fmaxOfThisThread;
-    //   std::vector<double> kappaMaxOfThisThread;
-
-#pragma omp parallel
+    for (long i = 0; i < n; ++i)
     {
-        double fmaxOfThisThread = std::numeric_limits<double>::min();
-        double kappaMaxOfThisThread = std::numeric_limits<double>::min();
+//        std::cout<<i<<std::endl<<std::flush;
 
-        // #pragma omp single
-        //     {
-        //       nt = omp_get_num_threads();
+        typename CSFLSLayer::iterator itz = m_lzIterVct[i];
 
-        //       fmaxOfThisThread.resize(nt);
-        //       kappaMaxOfThisThread.resize(nt);
+        long ix = itz->SFLSNodeComponent1;
+        long iy = itz->SFLSNodeComponent2;
+        long iz = itz->SFLSNodeComponent3;
 
-        //       for (int ithread = 0; ithread < nt; ++ithread)
-        //       {
-        //         fmaxOfThisThread[ithread] = std::numeric_limits<double>::min();
-        //         kappaMaxOfThisThread[ithread] = std::numeric_limits<double>::min();
-        //       }
+//        std::cout<<ix<<'\t'<<iy<<'\t'<<iz<<std::endl<<std::flush;
 
-        //       // implicite barrier here, good, gurantee the fmaxOfThisThread, kappaMaxOfThisThread are allocated.
-        //     }
+        int idx[] = {ix, iy, iz};
 
+        kappaOnZeroLS[i] = this->computeKappa(ix, iy, iz);
 
-        //int ithread = omp_get_thread_num();
+//        std::cout<<"kappaOnZeroLS[i] = "<<kappaOnZeroLS[i]<<std::endl<<std::flush;
 
-#pragma omp for
-        for (long i = 0; i < n; ++i)
-        {
-            typename CSFLSLayer::iterator itz = m_lzIterVct[i];
+        std::vector<FeatureImagePixelType> f(m_numberOfFeature);
 
-            long ix = itz->SFLSNodeComponent1;
-            long iy = itz->SFLSNodeComponent2;
-            long iz = itz->SFLSNodeComponent3;
+        computeFeatureAt(idx, f);
 
-            int idx[] = {ix, iy, iz};
+//        std::cout<<"feature = "<<f[0]<<'\t'<<f[1]<<'\t'<<f[2]<<std::endl<<std::flush;
 
-            kappaOnZeroLS[i] = this->computeKappa(ix, iy, iz);
+        double a = -kernelEvaluationUsingPDF(f);
 
-            std::vector<FeatureImagePixelType> f(m_numberOfFeature);
-
-            computeFeatureAt(idx, f);
-
-            // #pragma omp critical
-            //           {
-            //             computeFeatureAt(idx, f);
-            //           }
-
-            //double a = -kernelEvaluation(f);
-            double a = -kernelEvaluationUsingPDF(f);
+//        std::cout<<"a = "<<a<<std::endl<<std::flush;
 
 
-            fmaxOfThisThread = fmaxOfThisThread>fabs(a)?fmaxOfThisThread:fabs(a);
-            kappaMaxOfThisThread = kappaMaxOfThisThread>fabs(kappaOnZeroLS[i])?kappaMaxOfThisThread:fabs(kappaOnZeroLS[i]);
+        fmax = fmax>fabs(a)?fmax:fabs(a);
+        kappaMax = kappaMax>fabs(kappaOnZeroLS[i])?kappaMax:fabs(kappaOnZeroLS[i]);
 
-            cvForce[i] = a;
-        }
-
-#pragma omp critical
-        {
-            fmax = fmax>fmaxOfThisThread?fmax:fmaxOfThisThread;
-            kappaMax = kappaMax>kappaMaxOfThisThread?kappaMax:kappaMaxOfThisThread;
-        }
+        cvForce[i] = a;
     }
-
-
-
-    //     for (int ithread = 0; ithread < nt; ++ithread)
-    //       {
-    //         fmax = fmax>fmaxOfThisThread[ithread]?fmax:fmaxOfThisThread[ithread];
-    //         kappaMax = kappaMax>kappaMaxOfThisThread[ithread]?kappaMax:kappaMaxOfThisThread[ithread];
-    //       }
 
 
     this->m_force.resize(n);
@@ -211,7 +173,7 @@ CSFLSRobustStatSegmentor3DLabelMap::inputLableImageToSeeds()
                     thisSeed[2] = iz;
                     m_seeds.push_back(thisSeed);
 
-//                    sf<<thisSeed[0]<<", "<<thisSeed[1]<<", "<<thisSeed[2]<<std::endl;
+                    //                    sf<<thisSeed[0]<<", "<<thisSeed[1]<<", "<<thisSeed[2]<<std::endl;
                 }
             }
         }
@@ -331,8 +293,12 @@ CSFLSRobustStatSegmentor3DLabelMap::computeFeatureAt(int idx[3], std::vector<Fea
     f.resize(m_numberOfFeature);
     m_featureComputed_pixel_type* m_featureComputed_idx_ptr = static_cast<m_featureComputed_pixel_type*>(m_featureComputed->GetScalarPointer(idx));
 
+//    std::cout<<"m_featureComputed_idx_ptr[0] = "<<m_featureComputed_idx_ptr[0]<<std::endl<<std::flush;
+
     if (m_featureComputed_idx_ptr[0])
     {
+//        std::cout<<"alive here\n"<<std::flush;
+
         // the feature at this pixel is computed, just retrive
         for (long i = 0; i < m_numberOfFeature; ++i)
         {
@@ -341,6 +307,8 @@ CSFLSRobustStatSegmentor3DLabelMap::computeFeatureAt(int idx[3], std::vector<Fea
     }
     else
     {
+//        std::cout<<"alive else 0 \n"<<std::flush;
+
         // compute the feature
         std::vector< TPixel > neighborIntensities;
 
@@ -348,7 +316,23 @@ CSFLSRobustStatSegmentor3DLabelMap::computeFeatureAt(int idx[3], std::vector<Fea
         long iy = idx[1];
         long iz = idx[2];
 
-        TPixel* img_ptr = static_cast<TPixel*>(mp_img->GetScalarPointer(idx));
+//        std::cout<<ix<<'\t'<<iy<<'\t'<<iz<<std::endl<<std::flush;
+
+//        std::cout<<"mp_img = "<<mp_img<<std::endl<<std::flush;
+//        int np = mp_img->GetNumberOfPoints();
+//        std::cout<<"np = "<<np<<std::endl<<std::flush;
+
+//        std::cout<<mp_img->Get
+
+//        TPixel* img_ptr = static_cast<TPixel*>(this->mp_img->GetScalarPointer(ix, iy, iz));
+        TPixel* img_ptr = mp_img_ptr + iz*m_nx*m_ny + iy*m_nx + ix;
+
+//        std::cout<<mp_img_ptr<<std::endl<<std::flush;
+//        std::cout<<img_ptr<<std::endl<<std::flush;
+
+//        std::cout<<"alive else 1 \n"<<std::flush;
+
+
 
         for (long iiz = - m_statNeighborZ; iiz <= m_statNeighborZ; ++iiz)
         {
@@ -359,12 +343,14 @@ CSFLSRobustStatSegmentor3DLabelMap::computeFeatureAt(int idx[3], std::vector<Fea
                     if (0 <= ix-iix && ix+iix < this->m_nx && 0 <= iy-iiy && iy+iiy < this->m_ny && 0 <= iz-iiz && iz+iiz < this->m_nz)
                     {
                         TPixel tmp = img_ptr[iiz*m_increment2 + iiy*m_increment1 + iix*m_increment0];
-//                        TPixel tmp = *(static_cast<TPixel*>(mp_img->GetScalarPointer(iix, iiy, iiz)));
+                        //                        TPixel tmp = *(static_cast<TPixel*>(mp_img->GetScalarPointer(iix, iiy, iiz)));
                         neighborIntensities.push_back(tmp);
                     }
                 }
             }
         }
+
+//        std::cout<<"alive else\n"<<std::flush;
 
         getRobustStatistics(neighborIntensities, f);
 
@@ -386,9 +372,9 @@ CSFLSRobustStatSegmentor3DLabelMap::doSegmenationBeforeIteration()
 
     getThingsReady();
 
-//    std::ofstream f("/tmp/d.txt", std::ios_base::app);
-//    f<<"m_maxRunningTime = "<<this->m_maxRunningTime<<std::endl;
-//    f.close();
+    //    std::ofstream f("/tmp/d.txt", std::ios_base::app);
+    //    f<<"m_maxRunningTime = "<<this->m_maxRunningTime<<std::endl;
+    //    f.close();
 
 
 
@@ -426,15 +412,15 @@ void CSFLSRobustStatSegmentor3DLabelMap::inOneSegmentationIteration()
 
     computeForce();
 
-    std::cout<<"444444444444444444444444444444\n"<<std::flush;
+//    std::cout<<"444444444444444444444444444444\n"<<std::flush;
 
     this->normalizeForce();
 
-    std::cout<<"5555555555555555555"<<std::flush;
+//    std::cout<<"5555555555555555555"<<std::flush;
 
     this->oneStepLevelSetEvolution();
 
-    std::cout<<"66666666666666666666"<<std::flush;
+//    std::cout<<"66666666666666666666"<<std::flush;
 
 
     /*----------------------------------------------------------------------
@@ -477,9 +463,9 @@ CSFLSRobustStatSegmentor3DLabelMap::doSegmenation()
 
     getThingsReady();
 
-//    std::ofstream f("/tmp/d.txt", std::ios_base::app);
-//    f<<"m_maxRunningTime = "<<this->m_maxRunningTime<<std::endl;
-//    f.close();
+    //    std::ofstream f("/tmp/d.txt", std::ios_base::app);
+    //    f<<"m_maxRunningTime = "<<this->m_maxRunningTime<<std::endl;
+    //    f.close();
 
 
 
@@ -628,7 +614,7 @@ CSFLSRobustStatSegmentor3DLabelMap
     if (!(this->mp_img))
     {
         std::cerr<<"Error: set input image first.\n";
-abort();
+        abort();
     }
 
     if (this->mp_mask)
@@ -707,7 +693,7 @@ CSFLSRobustStatSegmentor3DLabelMap
     if (!(this->mp_img))
     {
         std::cerr<<"Error: set input image first.\n";
-abort();
+        abort();
     }
 
 
@@ -718,7 +704,7 @@ abort();
     if (n == 0)
     {
         std::cerr << "Error: No seeds specified." << std::endl;
-abort();
+        abort();
     }
 
 
@@ -727,7 +713,7 @@ abort();
         if (3 != m_seeds[i].size())
         {
             std::cerr<<"Error: 3 != m_seeds[i].size()\n";
-abort();
+            abort();
         }
 
         long ix = m_seeds[i][0];
@@ -792,7 +778,7 @@ CSFLSRobustStatSegmentor3DLabelMap::getFeatureAroundSeeds()
         if (3 != m_seeds[i].size())
         {
             std::cerr<<"Error: 3 != m_seeds[i].size()\n";
-abort();
+            abort();
         }
 
         long ix = m_seeds[i][0];
@@ -1020,18 +1006,18 @@ CSFLSRobustStatSegmentor3DLabelMap::computeMinMax()
     }
 
 
-//    for (int iz = 0; iz < size[2]; ++iz)
-//    {
-//        for (int iy = 0; iy < size[1]; ++iy)
-//        {
-//            for (int ix = 0; ix < size[0]; ++ix)
-//            {
-//                 = *(static_cast<TPixel*>(mp_img->GetScalarPointer(ix, iy, iz)));
+    //    for (int iz = 0; iz < size[2]; ++iz)
+    //    {
+    //        for (int iy = 0; iy < size[1]; ++iy)
+    //        {
+    //            for (int ix = 0; ix < size[0]; ++ix)
+    //            {
+    //                 = *(static_cast<TPixel*>(mp_img->GetScalarPointer(ix, iy, iz)));
 
 
-//            }
-//        }
-//    }
+    //            }
+    //        }
+    //    }
 
 
 

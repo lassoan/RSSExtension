@@ -60,6 +60,8 @@ protected:
   
   virtual void setup();
 
+static const int m_UIRefreshInterval = 101;
+
 private:
   Q_DECLARE_PRIVATE(qSlicerRSSLoadableModuleModuleWidget);
   Q_DISABLE_COPY(qSlicerRSSLoadableModuleModuleWidget);

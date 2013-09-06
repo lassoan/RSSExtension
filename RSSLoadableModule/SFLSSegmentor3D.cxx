@@ -117,8 +117,7 @@ This should not happen if the images are freshly loaded from file. Buy may happe
 
     mp_img->GetIncrements(m_increment0, m_increment1, m_increment2);
 
-    int startIdx[] = {0, 0, 0};
-    mp_img_ptr = static_cast<TPixel*>(mp_img->GetScalarPointer(startIdx));
+    mp_img_ptr = static_cast<TPixel*>(mp_img->GetScalarPointer(0, 0, 0));
 
     return;
 }

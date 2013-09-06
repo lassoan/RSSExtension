@@ -85,6 +85,8 @@ qSlicerRSSLoadableModuleModuleWidget::qSlicerRSSLoadableModuleModuleWidget(QWidg
     , d_ptr( new qSlicerRSSLoadableModuleModuleWidgetPrivate )
 {
     m_evolutionPaused = 0;
+
+//    m_UIRefreshInterval = 201;
 }
 
 //-----------------------------------------------------------------------------
@@ -183,7 +185,7 @@ void qSlicerRSSLoadableModuleModuleWidget::pausePushButtonClicked()
         d->pauseButton->setText("Pause");
         m_evolutionPaused = false;
 
-        QTimer::singleShot(100, this, SLOT(oneLevelSetIteration()));
+        QTimer::singleShot(m_UIRefreshInterval, this, SLOT(oneLevelSetIteration()));
     }
 
     return;
@@ -240,15 +242,8 @@ void qSlicerRSSLoadableModuleModuleWidget::applyPushButtonClicked()
     m_rssPointer->setIntensityHomogeneity(intensityHomogeneity);
     m_rssPointer->setCurvatureWeight(curvatureWeight / 1.5);
 
-    m_rssPointer->doSegmenation();
-
-
-//    m_rssPointer->doSegmenationBeforeIteration();
-
-
-
-
-    std::cout<<"111111111111111111111111111111111\n"<<std::flush;
+//    m_rssPointer->doSegmenation();
+    m_rssPointer->doSegmenationBeforeIteration();
 
     d->pauseButton->setEnabled(true);
 
@@ -265,9 +260,7 @@ void qSlicerRSSLoadableModuleModuleWidget::applyPushButtonClicked()
 
     outputVolumeNode->SetDisplayVisibility(1);
 
-
-    std::cout<<"222222222222222222222222222\n"<<std::flush;
-
+    std::cout<<"11111111111111111111111111111 np = "<<m_rssPointer->mp_img->GetNumberOfPoints()<<std::endl<<std::flush;
 
     //    vtkSlicerApplicationLogic *appLogic = this->module()->appLogic();
     vtkSlicerApplicationLogic *appLogic = app->applicationLogic();
@@ -275,11 +268,11 @@ void qSlicerRSSLoadableModuleModuleWidget::applyPushButtonClicked()
     selectionNode->SetActiveLabelVolumeID(outputVolumeNode->GetID());
     appLogic->PropagateVolumeSelection();
 
+std::cout<<"22222222222222222222222222 np = "<<m_rssPointer->mp_img->GetNumberOfPoints()<<std::endl<<std::flush;
 
-    std::cout<<"333333333333333333333\n"<<std::flush;
+oneLevelSetIteration();
 
-
-//    QTimer::singleShot(100, this, SLOT(oneLevelSetIteration()));
+    QTimer::singleShot(m_UIRefreshInterval, this, SLOT(oneLevelSetIteration()));
 }
 
 
@@ -376,18 +369,24 @@ vtkImageData* qSlicerRSSLoadableModuleModuleWidget::preprocessLabelMap(vtkImageD
 void qSlicerRSSLoadableModuleModuleWidget::oneLevelSetIteration()
 {
 
+    std::cout<<"3333333333333333333333333 np = "<<m_rssPointer->mp_img->GetNumberOfPoints()<<std::endl<<std::flush;
+
+
     if (m_rssPointer->m_done || m_evolutionPaused)
     {
         return;
     }
     else
     {
+        std::cout<<"44444444444444444444 np = "<<m_rssPointer->mp_img->GetNumberOfPoints()<<std::endl<<std::flush;
+
+
         m_rssPointer->inOneSegmentationIteration();
 
         Q_D(qSlicerRSSLoadableModuleModuleWidget);
         vtkMRMLNode* outputNode = d->OutputLabelVolumeMRMLNodeComboBox->currentNode();
         outputNode->Modified();
 
-        QTimer::singleShot(100, this, SLOT(oneLevelSetIteration()));
+//        QTimer::singleShot(m_UIRefreshInterval, this, SLOT(oneLevelSetIteration()));
     }
 }
