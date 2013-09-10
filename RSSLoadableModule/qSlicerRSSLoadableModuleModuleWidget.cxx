@@ -232,11 +232,11 @@ void qSlicerRSSLoadableModuleModuleWidget::applyPushButtonClicked()
     m_rssPointer->setImage(inputImageVTK);
     m_rssPointer->setInputLabelImage(newInputLabelImageVtk);
 
-    m_rssPointer->setNumIter(250); // a large enough number, s.t. will not be stoped by this creteria.
-    double expectedVolume = 100;
+    m_rssPointer->setNumIter(10000); // a large enough number, s.t. will not be stoped by this creteria. because we have the pause button in loadable module
+    double expectedVolume = 1000000; // a large enough number, s.t. will not be stoped by this creteria. because we have the pause button in loadable module
     m_rssPointer->setMaxVolume(expectedVolume);
 
-    double maxRunningTime = 1000;
+    double maxRunningTime = 10000; // a large enough number, s.t. will not be stoped by this creteria. because we have the pause button in loadable module
     m_rssPointer->setMaxRunningTime(maxRunningTime);
 
     m_rssPointer->setIntensityHomogeneity(intensityHomogeneity);
