@@ -70,13 +70,13 @@ CSFLSRobustStatSegmentor3DLabelMap::setInputLabelImage(vtkImageData* l)
     }
 
 
-    //    //dbg
-    //    vtkSmartPointer<vtkMetaImageWriter> writer = vtkSmartPointer<vtkMetaImageWriter>::New();
-    //    writer->SetFileName("m_inputLabelImage.mhd");
-    //    writer->SetRAWFileName("m_inputLabelImage.raw");
-    //    writer->SetInput(m_inputLabelImage);
-    //    writer->Write();
-    //    //dbg, end
+    //dbg
+    vtkMetaImageWriter* writer = vtkMetaImageWriter::New();
+    writer->SetFileName("/tmp/m_inputLabelImage.mhd");
+    writer->SetRAWFileName("/tmp/m_inputLabelImage.raw");
+    writer->SetInput(m_inputLabelImage);
+    writer->Write();
+    //dbg, end
 
     return;
 }
