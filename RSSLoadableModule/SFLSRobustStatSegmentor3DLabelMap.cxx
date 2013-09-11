@@ -18,6 +18,10 @@
 
 #include "vtkImageCast.h"
 
+// dbg
+#include "vtkMetaImageWriter.h"
+
+
 /* ============================================================   */
 
 void
@@ -385,15 +389,15 @@ CSFLSRobustStatSegmentor3DLabelMap::doSegmenationBeforeIteration()
     this->initializeSFLS();
 }
 
-void
-CSFLSRobustStatSegmentor3DLabelMap::doSegmenationIteration()
-{
-    //douher::saveAsImage2< double >(mp_phi, "initPhi.nrrd");
-    while(!m_done)        //for (unsigned int it = 0; ; ++it)
-    {
-        inOneSegmentationIteration();
-    }
-}
+// void
+// CSFLSRobustStatSegmentor3DLabelMap::doSegmenationIteration()
+// {
+//     //douher::saveAsImage2< double >(mp_phi, "initPhi.nrrd");
+//     while(!m_done)        //for (unsigned int it = 0; ; ++it)
+//     {
+//         inOneSegmentationIteration();
+//     }
+// }
 
 
 
@@ -407,6 +411,21 @@ void CSFLSRobustStatSegmentor3DLabelMap::inOneSegmentationIteration()
     //dbg//
     std::cout<<"In iteration "<<m_currentIteration<<std::endl<<std::flush;
     //DBG//
+
+
+    // dbg
+    char mhdName[1000];
+    sprintf(mhdName, "/tmp/mp_label_mask-before-iteration-%d.mhd", m_currentIteration);
+    char rawName[1000];
+    sprintf(rawName, "/tmp/mp_label_mask-before-iteration-%d.raw", m_currentIteration);
+
+    vtkMetaImageWriter* writer = vtkMetaImageWriter::New();
+    writer->SetFileName(mhdName);
+    writer->SetRAWFileName(rawName);
+    writer->SetInput(mp_label_mask);
+    writer->Write();
+    // dbg, end
+
 
     float oldVoxelCount = this->m_insideVoxelCount;
 
@@ -456,103 +475,102 @@ void CSFLSRobustStatSegmentor3DLabelMap::inOneSegmentationIteration()
 
 /* ============================================================  */
 
-void
-CSFLSRobustStatSegmentor3DLabelMap::doSegmenation()
-{
-    double startingTime = clock();
+// void
+// CSFLSRobustStatSegmentor3DLabelMap::doSegmenation()
+// {
+//     double startingTime = clock();
 
-    getThingsReady();
+//     getThingsReady();
 
-    //    std::ofstream f("/tmp/d.txt", std::ios_base::app);
-    //    f<<"m_maxRunningTime = "<<this->m_maxRunningTime<<std::endl;
-    //    f.close();
-
-
-
-    /*============================================================
-   * From the initial mask, generate: 1. SFLS, 2. mp_label and
-   * 3. mp_phi.
-   */
-    this->initializeSFLS();
-
-    for (unsigned int it = 0; it < this->m_numIter; ++it)
-        //for (unsigned int it = 0; ; ++it)
-    {
-        //dbg//
-        std::cout<<"In iteration "<<it<<std::endl<<std::flush;
-        //DBG//
-
-        // keep current zero contour as history is required
-        if (this->m_keepZeroLayerHistory)
-        {
-            (this->m_zeroLayerHistory).push_back(this->m_lz);
-        }
+//     //    std::ofstream f("/tmp/d.txt", std::ios_base::app);
+//     //    f<<"m_maxRunningTime = "<<this->m_maxRunningTime<<std::endl;
+//     //    f.close();
 
 
 
-        double oldVoxelCount = this->m_insideVoxelCount;
+//     /*============================================================
+//    * From the initial mask, generate: 1. SFLS, 2. mp_label and
+//    * 3. mp_phi.
+//    */
+//     this->initializeSFLS();
 
-        computeForce();
+//     for (unsigned int it = 0; it < this->m_numIter; ++it)
+//         //for (unsigned int it = 0; ; ++it)
+//     {
+//         //dbg//
+//         std::cout<<"In iteration "<<it<<std::endl<<std::flush;
+//         //DBG//
 
-        this->normalizeForce();
-
-        this->oneStepLevelSetEvolution();
-
-
-
-        /*----------------------------------------------------------------------
-        If the level set stops growing, stop */
-        this->updateInsideVoxelCount();
-        if (it > 2 && oldVoxelCount >= this->m_insideVoxelCount)
-        {
-            std::ofstream f("/tmp/o.txt");
-            f<<"stop grow\n";
-            f.close();
-
-            break;
-        }
-
-        /* If the level set stops growing, stop
-         ----------------------------------------------------------------------*/
+//         // keep current zero contour as history is required
+//         if (this->m_keepZeroLayerHistory)
+//         {
+//             (this->m_zeroLayerHistory).push_back(this->m_lz);
+//         }
 
 
-        /*----------------------------------------------------------------------
-        If the inside physical volume exceed expected volume, stop */
-        double volumeIn = (this->m_insideVoxelCount)*(this->m_dx)*(this->m_dy)*(this->m_dz);
-        if (volumeIn > (this->m_maxVolume))
-        {
-            //          std::fstream f("/tmp/o.txt", std::ios_base::app);
-            std::ofstream f("/tmp/o.txt");
-            f<<"m_maxVolume = "<<this->m_maxVolume<<std::endl;
-            f<<"volumeIn = "<<volumeIn<<std::endl;
 
-            f<<"reach max volume\n";
-            f.close();
+//         double oldVoxelCount = this->m_insideVoxelCount;
+
+//         computeForce();
+
+//         this->normalizeForce();
+
+//         this->oneStepLevelSetEvolution();
 
 
-            break;
-        }
-        /*If the inside physical volume exceed expected volume, stop
-        ----------------------------------------------------------------------*/
+
+//         /*----------------------------------------------------------------------
+//         If the level set stops growing, stop */
+//         this->updateInsideVoxelCount();
+//         if (it > 2 && oldVoxelCount >= this->m_insideVoxelCount)
+//         {
+//             std::ofstream f("/tmp/o.txt");
+//             f<<"stop grow\n";
+//             f.close();
+
+//             break;
+//         }
+
+//         /* If the level set stops growing, stop
+//          ----------------------------------------------------------------------*/
 
 
-        double ellapsedTime = (clock() - startingTime)/static_cast<double>(CLOCKS_PER_SEC);
-        if (ellapsedTime > (this->m_maxRunningTime))
-        {
-            std::ofstream f("/tmp/o.txt");
-            f<<"running time = "<<ellapsedTime<<std::endl;
-            f<<"m_maxRunningTime = "<<this->m_maxRunningTime<<std::endl;
-            f.close();
+//         /*----------------------------------------------------------------------
+//         If the inside physical volume exceed expected volume, stop */
+//         double volumeIn = (this->m_insideVoxelCount)*(this->m_dx)*(this->m_dy)*(this->m_dz);
+//         if (volumeIn > (this->m_maxVolume))
+//         {
+//             //          std::fstream f("/tmp/o.txt", std::ios_base::app);
+//             std::ofstream f("/tmp/o.txt");
+//             f<<"m_maxVolume = "<<this->m_maxVolume<<std::endl;
+//             f<<"volumeIn = "<<volumeIn<<std::endl;
 
-            break;
-        }
+//             f<<"reach max volume\n";
+//             f.close();
 
 
-    }
+//             break;
+//         }
+//         /*If the inside physical volume exceed expected volume, stop
+//         ----------------------------------------------------------------------*/
 
-    return;
-}
 
+//         double ellapsedTime = (clock() - startingTime)/static_cast<double>(CLOCKS_PER_SEC);
+//         if (ellapsedTime > (this->m_maxRunningTime))
+//         {
+//             std::ofstream f("/tmp/o.txt");
+//             f<<"running time = "<<ellapsedTime<<std::endl;
+//             f<<"m_maxRunningTime = "<<this->m_maxRunningTime<<std::endl;
+//             f.close();
+
+//             break;
+//         }
+
+
+//     }
+
+//     return;
+// }
 
 
 /* ============================================================ */

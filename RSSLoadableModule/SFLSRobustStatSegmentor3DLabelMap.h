@@ -67,10 +67,10 @@ public:
 
     void setInputLabelImage(vtkImageData* l);
 
-    void doSegmenation();
+  //void doSegmenation();
 
   void doSegmenationBeforeIteration();
-  void doSegmenationIteration();
+  //void doSegmenationIteration();
   void inOneSegmentationIteration();
 
     virtual void computeForce();
