@@ -927,8 +927,6 @@ void CSFLSSegmentor3D::initializeLabel()
         mp_label_mask_pixel_ptr[i] = defaultLabel;
     }
 
-<<<<<<< HEAD
-=======
     std::cout<<"mp_label_mask is initied\n"<<std::flush;
 
 
