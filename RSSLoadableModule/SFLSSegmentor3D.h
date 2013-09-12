@@ -56,7 +56,7 @@ public:
     void initializeLabel();
     void initializePhi();
 
-    virtual void doSegmenation() = 0;
+  //virtual void doSegmenation() = 0;
 
     // geometry
     double computeKappa(long ix, long iy, long iz);

@@ -60,6 +60,10 @@
 #include "vtkRenderWindow.h"
 #include "vtkRenderWindowInteractor.h"
 
+// dbg
+#include "vtkMetaImageWriter.h"
+
+
 //-----------------------------------------------------------------------------
 /// \ingroup Slicer_QtModules_ExtensionTemplate
 class qSlicerRSSLoadableModuleModuleWidgetPrivate: public Ui_qSlicerRSSLoadableModuleModuleWidget
@@ -227,25 +231,44 @@ void qSlicerRSSLoadableModuleModuleWidget::applyPushButtonClicked()
 
     qSlicerApplication * app = qSlicerApplication::application();
 
+    d->pauseButton->setEnabled(false);
+    //d->applyButton->setEnabled(false);
+
     // do seg
     m_rssPointer = new CSFLSRobustStatSegmentor3DLabelMap();
     m_rssPointer->setImage(inputImageVTK);
     m_rssPointer->setInputLabelImage(newInputLabelImageVtk);
 
-    m_rssPointer->setNumIter(250); // a large enough number, s.t. will not be stoped by this creteria.
-    double expectedVolume = 100;
+    m_rssPointer->setNumIter(10000); // a large enough number, s.t. will not be stoped by this creteria. because we have the pause button in loadable module
+    double expectedVolume = 1000000; // a large enough number, s.t. will not be stoped by this creteria. because we have the pause button in loadable module
     m_rssPointer->setMaxVolume(expectedVolume);
 
-    double maxRunningTime = 1000;
+    double maxRunningTime = 10000; // a large enough number, s.t. will not be stoped by this creteria. because we have the pause button in loadable module
     m_rssPointer->setMaxRunningTime(maxRunningTime);
 
     m_rssPointer->setIntensityHomogeneity(intensityHomogeneity);
     m_rssPointer->setCurvatureWeight(curvatureWeight / 1.5);
 
-    //    m_rssPointer->doSegmenation();
     m_rssPointer->doSegmenationBeforeIteration();
 
     d->pauseButton->setEnabled(true);
+    d->applyButton->setEnabled(false);
+
+
+    // dbg
+    {
+      char mhdName[1000];
+      sprintf(mhdName, "/tmp/mp_label_mask-here-%d.mhd", 1);
+      char rawName[1000];
+      sprintf(rawName, "/tmp/mp_label_mask-here-%d.raw", 1);
+
+      vtkMetaImageWriter* writer = vtkMetaImageWriter::New();
+      writer->SetFileName(mhdName);
+      writer->SetRAWFileName(rawName);
+      writer->SetInput(m_rssPointer->mp_label_mask);
+      writer->Write();
+    }
+    // dbg, end
 
     vtkMRMLNode* outputNode = d->OutputLabelVolumeMRMLNodeComboBox->currentNode();
     vtkMRMLScalarVolumeNode* outputVolumeNode = vtkMRMLScalarVolumeNode::SafeDownCast(outputNode);
@@ -260,6 +283,23 @@ void qSlicerRSSLoadableModuleModuleWidget::applyPushButtonClicked()
 
     outputVolumeNode->SetDisplayVisibility(1);
 
+
+    // dbg
+    {
+      char mhdName[1000];
+      sprintf(mhdName, "/tmp/mp_label_mask-here-%d.mhd", 2);
+      char rawName[1000];
+      sprintf(rawName, "/tmp/mp_label_mask-here-%d.raw", 2);
+
+      vtkMetaImageWriter* writer = vtkMetaImageWriter::New();
+      writer->SetFileName(mhdName);
+      writer->SetRAWFileName(rawName);
+      writer->SetInput(m_rssPointer->mp_label_mask);
+      writer->Write();
+    }
+    // dbg, end
+
+
     std::cout<<"11111111111111111111111111111 np = "<<m_rssPointer->mp_img->GetNumberOfPoints()<<std::endl<<std::flush;
 
     //    vtkSlicerApplicationLogic *appLogic = this->module()->appLogic();
@@ -269,6 +309,21 @@ void qSlicerRSSLoadableModuleModuleWidget::applyPushButtonClicked()
     appLogic->PropagateVolumeSelection();
 
     std::cout<<"22222222222222222222222222 np = "<<m_rssPointer->mp_img->GetNumberOfPoints()<<std::endl<<std::flush;
+
+    // dbg
+    {
+      char mhdName[1000];
+      sprintf(mhdName, "/tmp/mp_label_mask-here-%d.mhd", 3);
+      char rawName[1000];
+      sprintf(rawName, "/tmp/mp_label_mask-here-%d.raw", 3);
+
+      vtkMetaImageWriter* writer = vtkMetaImageWriter::New();
+      writer->SetFileName(mhdName);
+      writer->SetRAWFileName(rawName);
+      writer->SetInput(m_rssPointer->mp_label_mask);
+      writer->Write();
+    }
+    // dbg, end
 
     oneLevelSetIteration();
 
