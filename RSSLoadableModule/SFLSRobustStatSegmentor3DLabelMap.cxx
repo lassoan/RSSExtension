@@ -13,7 +13,6 @@
 #include <fstream>
 // //DEBUG//
 
-//#include <omp.h>
 #include "vtkImageData.h"
 
 #include "vtkImageCast.h"

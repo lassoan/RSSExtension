@@ -31,9 +31,6 @@ public:
         basicInit();
     }
 
-    //  /* New */
-    //  static Pointer New() { return Pointer(new Self); }
-
     void basicInit();
 
     /* just copy, not logic change
@@ -41,25 +38,7 @@ public:
      ----------------------------------------------------------------------
      ----------------------------------------------------------------------
      ---------------------------------------------------------------------- */
-
-//    typedef SuperClassType::vtkImageDataPointer vtkImageDataPointer;
     typedef float FeatureImagePixelType;
-    //  typedef typename SuperClassType::TCharImage TLabelImage;
-    //  typedef typename TLabelImage::Pointer TLabelImagePointer;
-
-
-    //  typedef typename SuperClassType::TDoubleImage TDoubleImage;
-    //  typedef typename TDoubleImage::Pointer TDoubleImagePointer;
-
-    //  typedef typename SuperClassType::TImage TImage;
-    //  typedef typename SuperClassType::TFloatImage TFloatImage;
-
-
-    //  typedef typename SuperClassType::MaskImageType TMaskImage;
-
-    //  typedef typename SuperClassType::TIndex TIndex;
-    //  typedef typename SuperClassType::TSize TSize;
-    //  typedef typename SuperClassType::TRegion TRegion;
 
     /* ============================================================
    * functions
@@ -69,9 +48,9 @@ public:
 
     void doSegmenation();
 
-  void doSegmenationBeforeIteration();
-  void doSegmenationIteration();
-  void inOneSegmentationIteration();
+    void doSegmenationBeforeIteration();
+    void doSegmenationIteration();
+    void inOneSegmentationIteration();
 
     virtual void computeForce();
 
@@ -80,9 +59,8 @@ public:
 
 protected:
     /* data */
-    //  TLabelImagePointer m_inputLabelImage;
     vtkImageData* m_inputLabelImage;
-  LabelImagePixelType* m_inputLabelImage_buffer_ptr;
+    LabelImagePixelType* m_inputLabelImage_buffer_ptr;
     std::vector<std::vector<long> > m_seeds; // in IJK
 
     std::vector< std::vector<FeatureImagePixelType> > m_featureAtTheSeeds;
@@ -97,7 +75,6 @@ protected:
      1: interquartile range (IRQ)
      2. median absolute deviation (MAD)
   */
-    //  TLabelImagePointer m_featureComputed; // if feature at this point is computed, then is 1
     typedef unsigned char m_featureComputed_pixel_type;
     vtkImageData* m_featureComputed; // if feature at this point is computed, then is 1
     std::vector<vtkImageData*> m_featureImageList;
@@ -128,10 +105,7 @@ protected:
     std::vector< std::vector<double> > m_PDFlearnedFromSeeds; // each feature corresponds to a inner std::vector<double>
     void estimatePDFs();
 
-    //void getFeatureAt(TDoubleImage::IndexType idx, std::vector<double>& f);
-
     virtual void getThingsReady();
-
 
     // kernel
     std::vector<double> m_kernelStddev;

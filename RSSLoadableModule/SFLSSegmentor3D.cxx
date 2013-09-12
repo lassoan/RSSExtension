@@ -49,9 +49,9 @@ CSFLSSegmentor3D::basicInit()
     m_increment2 = 0;
 
     mp_img_ptr = 0;
-    mp_label_ptr = 0;
-    mp_mask_ptr = 0;
-    mp_phi_ptr = 0;
+//    mp_label_ptr = 0;
+//    mp_mask_ptr = 0;
+//    mp_phi_ptr = 0;
 
     m_dx = 1.0;
     m_dy = 1.0;
@@ -92,19 +92,8 @@ void CSFLSSegmentor3D::setImage(vtkImageData* img)
 
     mp_img = castFilter->GetOutput();
     /* TODO This is to avoid the cases that the starting extent is not 0, 0, 0.
-This should not happen if the images are freshly loaded from file. Buy may happen when the input images are cropped from another image in memory.
-*/
-    //  TIndex start = mp_img->GetLargestPossibleRegion().GetIndex();
-    //  TIndex origin = {0, 0, 0};
-    //  if (start != origin)
-    //    {
-    //      std::cout<<"Warrning: Force image start to be (0, 0, 0)\n";
+This should not happen if the images are freshly loaded from file. Buy may happen when the input images are cropped from another image in memory.*/
 
-    //      TRegion region = mp_img->GetLargestPossibleRegion();
-    //      region.SetIndex(origin);
-
-    //      mp_img->SetRegions(region);
-    //    }
     int* size = img->GetDimensions();
 
     if (m_nx + m_ny + m_nz == 0)
@@ -184,22 +173,6 @@ void CSFLSSegmentor3D::setMask(vtkImageData* mask)
     mp_mask = mask;
     int* size = mask->GetDimensions();
 
-    //  TSize size = mask->GetLargestPossibleRegion().GetSize();
-
-
-    //  TIndex start = mp_mask->GetLargestPossibleRegion().GetIndex();
-    //  TIndex origin = {0, 0, 0};
-    //  if (start != origin)
-    //    {
-    //      std::cout<<"Warrning: Force mask start to be (0, 0, 0)\n";
-
-    //      TRegion region = mp_mask->GetLargestPossibleRegion();
-    //      region.SetIndex(origin);
-
-    //      mp_mask->SetRegions(region);
-    //    }
-
-
     if (m_nx + m_ny + m_nz == 0)
     {
         m_nx = size[0];
@@ -230,10 +203,6 @@ bool CSFLSSegmentor3D::getPhiOfTheNbhdWhoIsClosestToZeroLevelInLayerCloserToZero
    * go through all nbhd who is in the layer of label = mylevel+1
    * pick the LARGEST phi.
    */
-
-
-    //    LabelPixelType* mp_label_this_ptr = static_cast<LabelPixelType*>(mp_label->GetScalarPointer(ix, iy, iz));
-    //    LevelSetPixelType* mp_phi_this_ptr = static_cast<LevelSetPixelType*>(mp_phi->GetScalarPointer(ix, iy, iz));
 
     LabelPixelType mylevel = mp_label_this_ptr[0];
     bool foundNbhd = false;
@@ -402,7 +371,6 @@ void CSFLSSegmentor3D::normalizeForce()
 
 /* ============================================================
    updateInsideVoxelCount    */
-
 void CSFLSSegmentor3D::updateInsideVoxelCount()
 {
     m_insideVoxelCount -= m_lIn2out.size();
@@ -421,7 +389,6 @@ void CSFLSSegmentor3D::updateInsideVoxelCount()
 
 /* ============================================================
    oneStepLevelSetEvolution    */
-
 void CSFLSSegmentor3D::oneStepLevelSetEvolution()
 {
     // create 'changing status' lists
@@ -439,8 +406,6 @@ void CSFLSSegmentor3D::oneStepLevelSetEvolution()
     scan Lz values [-2.5 -1.5)[-1.5 -.5)[-.5 .5](.5 1.5](1.5 2.5]
     ========                */
     {
-        //std::list<double>::const_iterator itf = m_force.begin();
-
         long nz = m_lz.size();
         std::vector<CSFLSLayer::iterator> m_lzIterVct( nz );
         {
@@ -449,8 +414,6 @@ void CSFLSSegmentor3D::oneStepLevelSetEvolution()
                 m_lzIterVct[iiizzz++] = itz;
         }
 
-        //    for (CSFLSLayer::iterator itz = m_lz.begin(); itz != m_lz.end(); ++itf)
-        //#pragma omp parallel for
         for (long iiizzz = 0; iiizzz < nz; ++iiizzz)
         {
             long itf = iiizzz;
@@ -460,8 +423,6 @@ void CSFLSSegmentor3D::oneStepLevelSetEvolution()
             long ix = itz->SFLSNodeComponent1;
             long iy = itz->SFLSNodeComponent2;
             long iz = itz->SFLSNodeComponent3;
-
-            //        TIndex idx = {ix, iy, iz};
 
             LevelSetPixelType* phi_old_ptr = static_cast<LevelSetPixelType*>(mp_phi->GetScalarPointer(ix, iy, iz));
             LevelSetPixelType phi_old = phi_old_ptr[0];
@@ -481,15 +442,6 @@ void CSFLSSegmentor3D::oneStepLevelSetEvolution()
                 m_lOut2in.push_back(NodeType(ix, iy, iz));
             }
 
-            //           // DEBUG
-            //           if (phi_new > 3.1 || phi_new < -3.1)
-            //             {
-            //               std::cout<<"phi_old = "<<phi_old<<std::endl;
-            //               std::cout<<"its lbl = "<<(int)mp_label->get(ix, iy)<<std::endl;
-
-            //               std::cerr<<"phi_new > 3.1 || phi_new < -3.1\n";
-            //               raise(SIGABRT);
-            //             }
             phi_old_ptr[0] = phi_new;
 
             if(phi_new > 0.5)
@@ -513,11 +465,6 @@ void CSFLSSegmentor3D::oneStepLevelSetEvolution()
         }
     }
 
-
-    //     // debug
-    //     labelsCoherentCheck1();
-
-
     /*--------------------------------------------------
     2. update Ln1,Lp1,Lp2,Lp2, ****in that order****
 
@@ -531,7 +478,6 @@ void CSFLSSegmentor3D::oneStepLevelSetEvolution()
 
         LevelSetPixelType* phiPtr = static_cast<LevelSetPixelType*>(mp_phi->GetScalarPointer(ix, iy, iz));
         LabelPixelType* mp_label_this_ptr = static_cast<LabelPixelType*>(mp_label->GetScalarPointer(ix, iy, iz));
-        //        LevelSetPixelType* mp_phi_this_ptr = static_cast<LevelSetPixelType*>(mp_phi->GetScalarPointer(ix, iy, iz));
 
         LevelSetPixelType thePhi;
         bool found = getPhiOfTheNbhdWhoIsClosestToZeroLevelInLayerCloserToZeroLevel(ix, iy, iz, mp_label_this_ptr, phiPtr, thePhi);
@@ -570,11 +516,6 @@ void CSFLSSegmentor3D::oneStepLevelSetEvolution()
             phiPtr[0] -= 1.0;
         }
     }
-
-
-
-    //     // debug
-    //     labelsCoherentCheck1();
 
 
     /*--------------------------------------------------
@@ -627,10 +568,6 @@ void CSFLSSegmentor3D::oneStepLevelSetEvolution()
     }
 
 
-    //     // debug
-    //     labelsCoherentCheck1();
-
-
 
     /*--------------------------------------------------
     2.3 scan Ln2 values [-2.5 -1.5)[-1.5 -.5)[-.5 .5](.5 1.5](1.5 2.5]
@@ -678,10 +615,6 @@ void CSFLSSegmentor3D::oneStepLevelSetEvolution()
             mp_label_mask_pixel_ptr[0] = 1;
         }
     }
-
-
-    //     // debug
-    //     labelsCoherentCheck1();
 
 
 
@@ -736,11 +669,6 @@ void CSFLSSegmentor3D::oneStepLevelSetEvolution()
     }
 
 
-    //     // debug
-    //     labelsCoherentCheck1();
-
-
-
     /*--------------------------------------------------
     3. Deal with S-lists Sz,Sn1,Sp1,Sn2,Sp2
     3.1 Scan Sz */
@@ -755,11 +683,6 @@ void CSFLSSegmentor3D::oneStepLevelSetEvolution()
         *(static_cast<LabelPixelType*>(mp_label_mask->GetScalarPointer(ix, iy, iz))) = 1;
 
     }
-
-
-    //     // debug
-    //     labelsCoherentCheck1();
-
 
 
     /*--------------------------------------------------
@@ -781,7 +704,6 @@ void CSFLSSegmentor3D::oneStepLevelSetEvolution()
 
         if ( ix+1 < m_nx )
         {
-            //            LevelSetPixelType* phiPtr = static_cast<LevelSetPixelType*>(mp_phi->GetScalarPointer(ix+1, iy, iz));
             if (floatingEqual<LevelSetPixelType>(mp_phi_at_idx_ptr[m_increment0], -3.0))
             {
                 Sn2.push_back(NodeType(ix+1, iy, iz));
@@ -791,7 +713,6 @@ void CSFLSSegmentor3D::oneStepLevelSetEvolution()
 
         if ( ix-1 >= 0 )
         {
-            //            LevelSetPixelType* phiPtr = static_cast<LevelSetPixelType*>(mp_phi->GetScalarPointer(ix-1, iy, iz));
             if (floatingEqual<LevelSetPixelType>(mp_phi_at_idx_ptr[-m_increment0], -3.0))
             {
                 Sn2.push_back(NodeType(ix-1, iy, iz));
@@ -802,7 +723,6 @@ void CSFLSSegmentor3D::oneStepLevelSetEvolution()
 
         if ( iy+1 < m_ny )
         {
-            //            LevelSetPixelType* phiPtr = static_cast<LevelSetPixelType*>(mp_phi->GetScalarPointer(ix, iy+1, iz));
             if (floatingEqual<LevelSetPixelType>(mp_phi_at_idx_ptr[m_increment1], -3.0))
             {
                 Sn2.push_back(NodeType(ix, iy+1, iz));
@@ -813,7 +733,6 @@ void CSFLSSegmentor3D::oneStepLevelSetEvolution()
 
         if ( iy-1 >= 0 )
         {
-            //            LevelSetPixelType* phiPtr = static_cast<LevelSetPixelType*>(mp_phi->GetScalarPointer(ix, iy-1, iz));
             if (floatingEqual<LevelSetPixelType>(mp_phi_at_idx_ptr[-m_increment1], -3.0))
             {
                 Sn2.push_back(NodeType(ix, iy-1, iz));
@@ -823,7 +742,6 @@ void CSFLSSegmentor3D::oneStepLevelSetEvolution()
 
         if ( iz+1 < m_nz )
         {
-            //            LevelSetPixelType* phiPtr = static_cast<LevelSetPixelType*>(mp_phi->GetScalarPointer(ix, iy, iz+1));
             if (floatingEqual<LevelSetPixelType>(mp_phi_at_idx_ptr[m_increment2], -3.0))
             {
                 Sn2.push_back(NodeType(ix, iy, iz+1));
@@ -834,7 +752,6 @@ void CSFLSSegmentor3D::oneStepLevelSetEvolution()
 
         if ( iz-1 >= 0 )
         {
-            //            LevelSetPixelType* phiPtr = static_cast<LevelSetPixelType*>(mp_phi->GetScalarPointer(ix, iy, iz-1));
             if (floatingEqual<LevelSetPixelType>(mp_phi_at_idx_ptr[-m_increment2], -3.0))
             {
                 Sn2.push_back(NodeType(ix, iy, iz-1));
@@ -842,10 +759,6 @@ void CSFLSSegmentor3D::oneStepLevelSetEvolution()
             }
         }
     }
-
-
-    //     // debug
-    //     labelsCoherentCheck1();
 
 
     /*--------------------------------------------------
@@ -867,7 +780,6 @@ void CSFLSSegmentor3D::oneStepLevelSetEvolution()
 
         if ( ix+1 < m_nx )
         {
-            //            LevelSetPixelType* phiPtr = static_cast<LevelSetPixelType*>(mp_phi->GetScalarPointer(ix+1, iy, iz));
             if (floatingEqual<LevelSetPixelType>(mp_phi_at_idx_ptr[m_increment0], 3.0))
             {
                 Sp2.push_back(NodeType(ix+1, iy, iz));
@@ -877,7 +789,6 @@ void CSFLSSegmentor3D::oneStepLevelSetEvolution()
 
         if ( ix-1 >= 0 )
         {
-            //            LevelSetPixelType* phiPtr = static_cast<LevelSetPixelType*>(mp_phi->GetScalarPointer(ix-1, iy, iz));
             if (floatingEqual<LevelSetPixelType>(mp_phi_at_idx_ptr[-m_increment0], 3.0))
             {
                 Sp2.push_back(NodeType(ix-1, iy, iz));
@@ -888,7 +799,6 @@ void CSFLSSegmentor3D::oneStepLevelSetEvolution()
 
         if ( iy+1 < m_ny )
         {
-            //            LevelSetPixelType* phiPtr = static_cast<LevelSetPixelType*>(mp_phi->GetScalarPointer(ix, iy+1, iz));
             if (floatingEqual<LevelSetPixelType>(mp_phi_at_idx_ptr[m_increment1], 3.0))
             {
                 Sp2.push_back(NodeType(ix, iy+1, iz));
@@ -898,7 +808,6 @@ void CSFLSSegmentor3D::oneStepLevelSetEvolution()
 
         if ( iy-1 >= 0 )
         {
-            //            LevelSetPixelType* phiPtr = static_cast<LevelSetPixelType*>(mp_phi->GetScalarPointer(ix, iy-1, iz));
             if (floatingEqual<LevelSetPixelType>(mp_phi_at_idx_ptr[-m_increment1], 3.0))
             {
                 Sp2.push_back(NodeType(ix, iy-1, iz));
@@ -908,7 +817,6 @@ void CSFLSSegmentor3D::oneStepLevelSetEvolution()
 
         if ( iz+1 < m_nz )
         {
-            //            LevelSetPixelType* phiPtr = static_cast<LevelSetPixelType*>(mp_phi->GetScalarPointer(ix, iy, iz+1));
             if (floatingEqual<LevelSetPixelType>(mp_phi_at_idx_ptr[m_increment2], 3.0))
             {
                 Sp2.push_back(NodeType(ix, iy, iz+1));
@@ -919,7 +827,6 @@ void CSFLSSegmentor3D::oneStepLevelSetEvolution()
 
         if ( iz-1 >= 0 )
         {
-            //            LevelSetPixelType* phiPtr = static_cast<LevelSetPixelType*>(mp_phi->GetScalarPointer(ix, iy, iz-1));
             if (floatingEqual<LevelSetPixelType>(mp_phi_at_idx_ptr[-m_increment2], 3.0))
             {
                 Sp2.push_back(NodeType(ix, iy, iz-1));
@@ -927,10 +834,6 @@ void CSFLSSegmentor3D::oneStepLevelSetEvolution()
             }
         }
     }
-
-
-    //     // debug
-    //     labelsCoherentCheck1();
 
 
     /*--------------------------------------------------
@@ -948,8 +851,6 @@ void CSFLSSegmentor3D::oneStepLevelSetEvolution()
 
             *(static_cast<LabelPixelType*>(mp_label->GetScalarPointer(ix, iy, iz))) = -2;
             *(static_cast<LabelPixelType*>(mp_label_mask->GetScalarPointer(ix, iy, iz))) = 1;
-            //           // debug
-            //           labelsCoherentCheck1();
         }
     }
 
@@ -969,13 +870,10 @@ void CSFLSSegmentor3D::oneStepLevelSetEvolution()
         *(static_cast<LabelPixelType*>(mp_label_mask->GetScalarPointer(ix, iy, iz))) = 0;
     }
 
-    //     // debug
-    //     labelsCoherentCheck1();
 }
 
 /*================================================================================
   initializeLabel*/
-
 void CSFLSSegmentor3D::initializeLabel()
 {
     if (m_nx + m_ny + m_nz == 0 || m_increment0 + m_increment1 + m_increment2 == 0)
@@ -994,9 +892,7 @@ void CSFLSSegmentor3D::initializeLabel()
     mp_label->SetOrigin(mp_img->GetOrigin());
     mp_label->SetSpacing(mp_img->GetSpacing());
     mp_label->SetInformation(mp_img->GetInformation());
-    //    mp_label->SetExtent(mp_img->GetExtent());
 #if VTK_MAJOR_VERSION <= 5
-    //    std::cout<<"VTK_MAJOR_VERSION <= 5\n";
     mp_label->SetNumberOfScalarComponents(1);
     mp_label->SetScalarTypeToShort();
     mp_label->AllocateScalars();
@@ -1004,9 +900,7 @@ void CSFLSSegmentor3D::initializeLabel()
     mp_label->AllocateScalars(VTK_SHORT, 1);
 #endif
 
-    mp_label_ptr = static_cast<LabelPixelType*>(mp_label->GetScalarPointer(0, 0, 0));
-
-
+    LabelPixelType* mp_label_ptr = static_cast<LabelPixelType*>(mp_label->GetScalarPointer(0, 0, 0));
 
 
     mp_label_mask = vtkImageData::New();
@@ -1014,9 +908,7 @@ void CSFLSSegmentor3D::initializeLabel()
     mp_label_mask->SetOrigin(mp_img->GetOrigin());
     mp_label_mask->SetSpacing(mp_img->GetSpacing());
     mp_label_mask->SetInformation(mp_img->GetInformation());
-    //    mp_label_mask->SetExtent(mp_img->GetExtent());
 #if VTK_MAJOR_VERSION <= 5
-    //    std::cout<<"VTK_MAJOR_VERSION <= 5\n";
     mp_label_mask->SetNumberOfScalarComponents(1);
     mp_label_mask->SetScalarTypeToShort();
     mp_label_mask->AllocateScalars();
@@ -1033,20 +925,6 @@ void CSFLSSegmentor3D::initializeLabel()
         mp_label_ptr[i] = defaultLabel;
         mp_label_mask_pixel_ptr[i] = defaultLabel;
     }
-
-    std::cout<<"mp_label_mask is initied\n"<<std::flush;
-
-    //    for (int z = 0; z < size[2]; z++)
-    //    {
-    //        for (int y = 0; y < size[1]; y++)
-    //        {
-    //            for (int x = 0; x < size[0]; x++)
-    //            {
-    //                *(static_cast<LabelPixelType*>(mp_label->GetScalarPointer(x,y,z))) = defaultLabel;
-    //            }
-    //        }
-    //    }
-
 
     return;
 }
@@ -1074,7 +952,6 @@ void CSFLSSegmentor3D::initializePhi()
     mp_phi->SetInformation(mp_img->GetInformation());
 
 #if VTK_MAJOR_VERSION <= 5
-    //    std::cout<<"VTK_MAJOR_VERSION <= 5\n";
     mp_phi->SetNumberOfScalarComponents(1);
     mp_phi->SetScalarTypeToFloat();
     mp_phi->AllocateScalars();
@@ -1083,23 +960,13 @@ void CSFLSSegmentor3D::initializePhi()
 #endif
 
     int startIdx[] = {0, 0, 0};
-    mp_phi_ptr = static_cast<LevelSetPixelType*>(mp_phi->GetScalarPointer(startIdx));
+    LevelSetPixelType* mp_phi_ptr = static_cast<LevelSetPixelType*>(mp_phi->GetScalarPointer(startIdx));
     long n = size[0]*size[1]*size[2];
     for (long i = 0; i < n; i += m_increment0)
     {
         mp_phi_ptr[i] = arbitraryInitPhi;
     }
 
-    //    for (int z = 0; z < size[2]; z++)
-    //    {
-    //        for (int y = 0; y < size[1]; y++)
-    //        {
-    //            for (int x = 0; x < size[0]; x++)
-    //            {
-    //                *(static_cast<LevelSetPixelType*>(mp_phi->GetScalarPointer(x,y,z))) = arbitraryInitPhi;
-    //            }
-    //        }
-    //    }
 
     //    // dbg
     //    vtkSmartPointer<vtkMetaImageWriter> writer = vtkSmartPointer<vtkMetaImageWriter>::New();
@@ -1339,8 +1206,6 @@ void CSFLSSegmentor3D::initializeSFLSFromMask()
         mp_label_pixel_ptr = static_cast<LabelPixelType*>(mp_label->GetScalarPointer(ix, iy, iz));
         mp_label_mask_pixel_ptr = static_cast<LabelPixelType*>(mp_label_mask->GetScalarPointer(ix, iy, iz));
 
-
-        //        int idx1[] = {ix+1, iy, iz};
         if(ix+1 < m_nx && mp_label_pixel_ptr[m_increment0] == -3 )
         {
             mp_label_pixel_ptr[m_increment0] = -2;
@@ -1350,7 +1215,6 @@ void CSFLSSegmentor3D::initializeSFLSFromMask()
             m_ln2.push_back( NodeType(ix+1, iy, iz) );
         }
 
-        //        int idx2[] = {ix-1, iy, iz};
         if(ix-1 >= 0 && mp_label_pixel_ptr[-m_increment0] == -3 )
         {
             mp_label_pixel_ptr[-m_increment0] = -2;
@@ -1360,7 +1224,6 @@ void CSFLSSegmentor3D::initializeSFLSFromMask()
             m_ln2.push_back( NodeType(ix-1, iy, iz) );
         }
 
-        //        int idx3[] = {ix, iy+1, iz};
         if(iy+1 < m_ny && mp_label_pixel_ptr[m_increment1] == -3 )
         {
             mp_label_pixel_ptr[m_increment1] = -2;
@@ -1370,7 +1233,6 @@ void CSFLSSegmentor3D::initializeSFLSFromMask()
             m_ln2.push_back( NodeType(ix, iy+1, iz) );
         }
 
-        //        int idx4[] = {ix, iy-1, iz};
         if(iy-1 >= 0 && mp_label_pixel_ptr[-m_increment1] == -3 )
         {
             mp_label_pixel_ptr[-m_increment1] = -2;
@@ -1380,7 +1242,6 @@ void CSFLSSegmentor3D::initializeSFLSFromMask()
             m_ln2.push_back( NodeType(ix, iy-1, iz) );
         }
 
-        //        int idx5[] = {ix, iy, iz+1};
         if(iz+1 < m_nz && mp_label_pixel_ptr[m_increment2] == -3 )
         {
             mp_label_pixel_ptr[m_increment2] = -2;
@@ -1390,8 +1251,6 @@ void CSFLSSegmentor3D::initializeSFLSFromMask()
             m_ln2.push_back( NodeType(ix, iy, iz+1) );
         }
 
-
-        //        int idx6[] = {ix, iy, iz-1};
         if(iz-1 >= 0 && mp_label_pixel_ptr[-m_increment2] == -3 )
         {
             mp_label_pixel_ptr[-m_increment2] = -2;
@@ -1413,8 +1272,6 @@ void CSFLSSegmentor3D::initializeSFLSFromMask()
         mp_label_pixel_ptr = static_cast<LabelPixelType*>(mp_label->GetScalarPointer(ix, iy, iz));
         mp_label_mask_pixel_ptr = static_cast<LabelPixelType*>(mp_label_mask->GetScalarPointer(ix, iy, iz));
 
-
-        //        int idx1[] = {ix+1, iy, iz};
         if(ix+1 < m_nx && mp_label_pixel_ptr[m_increment0] == 3 )
         {
             mp_label_pixel_ptr[m_increment0] = 2;
@@ -1424,7 +1281,6 @@ void CSFLSSegmentor3D::initializeSFLSFromMask()
             m_lp2.push_back( NodeType(ix+1, iy, iz) );
         }
 
-        //        int idx2[] = {ix-1, iy, iz};
         if(ix-1 >= 0 && mp_label_pixel_ptr[-m_increment0] == 3 )
         {
             mp_label_pixel_ptr[-m_increment0] = 2;
@@ -1434,7 +1290,6 @@ void CSFLSSegmentor3D::initializeSFLSFromMask()
             m_lp2.push_back( NodeType(ix-1, iy, iz) );
         }
 
-        //        int idx3[] = {ix, iy+1, iz};
         if(iy+1 < m_ny && mp_label_pixel_ptr[m_increment1] == 3 )
         {
             mp_label_pixel_ptr[m_increment1] = 2;
@@ -1444,7 +1299,6 @@ void CSFLSSegmentor3D::initializeSFLSFromMask()
             m_lp2.push_back( NodeType(ix, iy+1, iz) );
         }
 
-        //        int idx4[] = {ix, iy-1, iz};
         if(iy-1 >= 0 && mp_label_pixel_ptr[-m_increment1] == 3 )
         {
             mp_label_pixel_ptr[-m_increment1] = 2;
@@ -1454,7 +1308,6 @@ void CSFLSSegmentor3D::initializeSFLSFromMask()
             m_lp2.push_back( NodeType(ix, iy-1, iz) );
         }
 
-        //        int idx5[] = {ix, iy, iz+1};
         if(iz+1 < m_nz && mp_label_pixel_ptr[m_increment2] == 3 )
         {
             mp_label_pixel_ptr[m_increment2] = 2;
@@ -1464,7 +1317,6 @@ void CSFLSSegmentor3D::initializeSFLSFromMask()
             m_lp2.push_back( NodeType(ix, iy, iz+1) );
         }
 
-        //        int idx6[] = {ix, iy, iz-1};
         if(iz-1 >= 0 && mp_label_pixel_ptr[-m_increment2] == 3 )
         {
             mp_label_pixel_ptr[-m_increment2] = 2;
@@ -1476,17 +1328,17 @@ void CSFLSSegmentor3D::initializeSFLSFromMask()
     }
 }
 
-/* getLevelSetFunction */
-vtkImageData* CSFLSSegmentor3D::getLevelSetFunction()
-{
-    //   if (!m_done)
-    //     {
-    //       std::cerr<<"Error: not done.\n";
-    //       raise(SIGABRT);
-    //     }
+///* getLevelSetFunction */
+//vtkImageData* CSFLSSegmentor3D::getLevelSetFunction()
+//{
+//    //   if (!m_done)
+//    //     {
+//    //       std::cerr<<"Error: not done.\n";
+//    //       raise(SIGABRT);
+//    //     }
 
-    return mp_phi;
-}
+//    return mp_phi;
+//}
 
 
 /*============================================================
@@ -1517,12 +1369,6 @@ double CSFLSSegmentor3D::computeKappa(long ix, long iy, long iz)
     char zok = 0;
 
     int idx[] = {ix, iy, iz};
-    //    int idx1[] = {ix-1, iy, iz};
-    //    int idx2[] = {ix+1, iy, iz};
-    //    int idx3[] = {ix, iy-1, iz};
-    //    int idx4[] = {ix, iy+1, iz};
-    //    int idx5[] = {ix, iy, iz-1};
-    //    int idx6[] = {ix, iy, iz+1};
 
 
     if( ix+1 < m_nx && ix-1 >=0 )
@@ -1578,55 +1424,26 @@ double CSFLSSegmentor3D::computeKappa(long ix, long iy, long iz)
 
     if(xok && yok)
     {
-        //        int idx_1[] = {ix+1, iy+1, iz};
-        //        int idx_2[] = {ix-1, iy-1, iz};
-        //        int idx_3[] = {ix+1, iy-1, iz};
-        //        int idx_4[] = {ix-1, iy+1, iz};
-
         dxy = 0.25*(mp_phi_idx_ptr[m_increment0 + m_increment1]\
                     + mp_phi_idx_ptr[-m_increment0 - m_increment1]\
                     - mp_phi_idx_ptr[m_increment0 - m_increment1]\
                     - mp_phi_idx_ptr[-m_increment0 + m_increment1])/(m_dx*m_dy);
-        //        dxy = 0.25*( *(static_cast<LevelSetPixelType*>(mp_phi->GetScalarPointer(idx_1))) \
-        //                     + *(static_cast<LevelSetPixelType*>(mp_phi->GetScalarPointer(idx_2)))\
-        //                     - *(static_cast<LevelSetPixelType*>(mp_phi->GetScalarPointer(idx_3)))\
-        //                     - *(static_cast<LevelSetPixelType*>(mp_phi->GetScalarPointer(idx_4))))/(m_dx*m_dy);
     }
 
     if(xok && zok)
     {
-        //        int idx_1[] = {ix+1, iy, iz+1};
-        //        int idx_2[] = {ix-1, iy, iz-1};
-        //        int idx_3[] = {ix+1, iy, iz-1};
-        //        int idx_4[] = {ix-1, iy, iz+1};
-
         dxy = 0.25*(mp_phi_idx_ptr[m_increment0 + m_increment2]\
                     + mp_phi_idx_ptr[-m_increment0 - m_increment2]\
                     - mp_phi_idx_ptr[m_increment0 - m_increment2]\
                     - mp_phi_idx_ptr[-m_increment0 + m_increment2])/(m_dx*m_dz);
-
-        //        dxz = 0.25*( *(static_cast<LevelSetPixelType*>(mp_phi->GetScalarPointer(idx_1))) \
-        //                     + *(static_cast<LevelSetPixelType*>(mp_phi->GetScalarPointer(idx_2)))\
-        //                     - *(static_cast<LevelSetPixelType*>(mp_phi->GetScalarPointer(idx_3)))\
-        //                     - *(static_cast<LevelSetPixelType*>(mp_phi->GetScalarPointer(idx_4))))/(m_dx*m_dz);
     }
 
     if(yok && zok)
     {
-        //        int idx_1[] = {ix, iy+1, iz+1};
-        //        int idx_2[] = {ix, iy-1, iz-1};
-        //        int idx_3[] = {ix, iy+1, iz-1};
-        //        int idx_4[] = {ix, iy-1, iz+1};
-
         dxy = 0.25*(mp_phi_idx_ptr[m_increment1 + m_increment2]\
                     + mp_phi_idx_ptr[-m_increment1 - m_increment2]\
                     - mp_phi_idx_ptr[m_increment1 - m_increment2]\
                     - mp_phi_idx_ptr[-m_increment1 + m_increment2])/(m_dy*m_dz);
-
-        //        dyz = 0.25*( *(static_cast<LevelSetPixelType*>(mp_phi->GetScalarPointer(idx_1))) \
-        //                     + *(static_cast<LevelSetPixelType*>(mp_phi->GetScalarPointer(idx_2)))\
-        //                     - *(static_cast<LevelSetPixelType*>(mp_phi->GetScalarPointer(idx_3)))\
-        //                     - *(static_cast<LevelSetPixelType*>(mp_phi->GetScalarPointer(idx_4))))/(m_dy*m_dz);
     }
 
     double k = (dxx*(dy2 + dz2) + dyy*(dx2 + dz2) + dzz*(dx2 + dy2) - 2*dx*dy*dxy - 2*dx*dz*dxz - 2*dy*dz*dyz)/(dx2 + dy2 + dz2 + m_eps);

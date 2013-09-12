@@ -19,13 +19,11 @@ public:
     typedef SuperClassType::NodeType NodeType;
     typedef SuperClassType::CSFLSLayer CSFLSLayer;
 
-  typedef short ImagePixelType;
-  typedef short LabelImagePixelType;
-  typedef unsigned char MaskImagePixelType;
-  typedef float LevelSetImagePixelType;
-  typedef unsigned char NeighborLabelImagePixelType;
-
-//    typedef vtkImageData* vtkImageDataPointer;
+    typedef short ImagePixelType;
+    typedef short LabelImagePixelType;
+    typedef unsigned char MaskImagePixelType;
+    typedef float LevelSetImagePixelType;
+    typedef unsigned char NeighborLabelImagePixelType;
 
     typedef short LabelPixelType;
     typedef unsigned char MaskPixelType;
@@ -48,7 +46,6 @@ public:
 
     void normalizeForce();
 
-//    bool getPhiOfTheNbhdWhoIsClosestToZeroLevelInLayerCloserToZeroLevel(long ix, long iy, long iz, LevelSetPixelType& thePhi);
     bool getPhiOfTheNbhdWhoIsClosestToZeroLevelInLayerCloserToZeroLevel(long ix, long iy, long iz, LabelPixelType* mp_label_this_ptr, LevelSetPixelType* mp_phi_this_ptr, LevelSetPixelType& thePhi);
 
     void oneStepLevelSetEvolution();
@@ -80,16 +77,12 @@ public:
     TPixel* mp_img_ptr; //pointing to the first element of the image
 
     vtkImageData* mp_label; // short type
-    LabelImagePixelType* mp_label_ptr; //pointing to the first element of the label image
 
     vtkImageData* mp_mask; // unsigned char, 0, non-0 mask for object
-    MaskPixelType* mp_mask_ptr; //pointing to the first element of the mask image
 
     vtkImageData* mp_phi; // float type is enough, no need for double
-    LevelSetPixelType* mp_phi_ptr; //pointing to the first element of the level set image
 
-  vtkImageData* mp_label_mask; // 0-1 mask always corresponding to the 0 and negative region of mp_label
-//  LabelImagePixelType* mp_label_mask_buffer_ptr;
+    vtkImageData* mp_label_mask; // 0-1 mask always corresponding to the 0 and negative region of mp_label
 
     std::vector< LevelSetPixelType > m_force;
 
@@ -99,7 +92,7 @@ public:
 
     bool m_done;
 
- unsigned long m_currentIteration;
+    unsigned long m_currentIteration;
 
 protected:
     double m_curvatureWeight;
@@ -107,7 +100,7 @@ protected:
     long m_nx;
     long m_ny;
     long m_nz;
- 
+
     vtkIdType m_increment0;
     vtkIdType m_increment1;
     vtkIdType m_increment2;
