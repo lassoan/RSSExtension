@@ -308,7 +308,7 @@ void qSlicerRSSLoadableModuleModuleWidget::applyPushButtonClicked()
     // dbg, end
 
 
-    std::cout<<"11111111111111111111111111111 np = "<<m_rssPointer->mp_img->GetNumberOfPoints()<<std::endl<<std::flush;
+//    std::cout<<"11111111111111111111111111111 np = "<<m_rssPointer->mp_img->GetNumberOfPoints()<<std::endl<<std::flush;
 
     //    vtkSlicerApplicationLogic *appLogic = this->module()->appLogic();
     vtkSlicerApplicationLogic *appLogic = app->applicationLogic();
@@ -316,7 +316,7 @@ void qSlicerRSSLoadableModuleModuleWidget::applyPushButtonClicked()
     selectionNode->SetActiveLabelVolumeID(outputVolumeNode->GetID());
     appLogic->PropagateVolumeSelection();
 
-    std::cout<<"22222222222222222222222222 np = "<<m_rssPointer->mp_img->GetNumberOfPoints()<<std::endl<<std::flush;
+//    std::cout<<"22222222222222222222222222 np = "<<m_rssPointer->mp_img->GetNumberOfPoints()<<std::endl<<std::flush;
 
     // dbg
     {
