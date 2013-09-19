@@ -1475,7 +1475,7 @@ double CSFLSSegmentor3D::computeKappa(long ix, long iy, long iz)
     LevelSetPixelType* mp_phi_idx_ptr = static_cast<LevelSetPixelType*>(mp_phi->GetScalarPointer(idx));
     LevelSetPixelType tmp = mp_phi_idx_ptr[0];
 
-    assert(!isnan(tmp));
+    //assert(!isnan(tmp));
 
     if (xok)
     {
@@ -1534,7 +1534,7 @@ double CSFLSSegmentor3D::computeKappa(long ix, long iy, long iz)
 
     double k = (dxx*(dy2 + dz2) + dyy*(dx2 + dz2) + dzz*(dx2 + dy2) - 2*dx*dy*dxy - 2*dx*dz*dxz - 2*dy*dz*dyz)/(dx2 + dy2 + dz2 + m_eps);
 
-    assert(!isnan(k));
+    //assert(!isnan(k));
 
     return k;
 }
