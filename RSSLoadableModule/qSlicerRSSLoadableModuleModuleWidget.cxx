@@ -26,8 +26,8 @@
 #include "vtkMRMLNode.h"
 #include "vtkMRMLScalarVolumeNode.h"
 #include "vtkImageData.h"
-#include "vtkITKImageWriter.h"
-#include "vtkSmartPointer.h"
+//#include "vtkITKImageWriter.h"
+//#include "vtkSmartPointer.h"
 #include "vtkImageCast.h"
 
 #include <iostream>
@@ -40,7 +40,7 @@
 //#include "walltime.h"
 
 #include "vtkVersion.h"
-#include "vtkSmartPointer.h"
+//#include "vtkSmartPointer.h"
 #include <vtkImageData.h>
 
 #include "vtkSlicerApplicationLogic.h"
@@ -213,19 +213,25 @@ void qSlicerRSSLoadableModuleModuleWidget::applyPushButtonClicked()
 
     vtkMRMLNode* inputNode = d->InputVolumeMRMLNodeComboBox->currentNode();
     vtkMRMLVolumeNode* inputVolumeNode = vtkMRMLVolumeNode::SafeDownCast(inputNode);
-    vtkSmartPointer<vtkImageCast> castFilter = vtkSmartPointer<vtkImageCast>::New();
+    vtkImageCast* castFilter = vtkImageCast::New();
     castFilter->SetInput(inputVolumeNode->GetImageData());
     castFilter->SetOutputScalarTypeToShort();// coz RSS input label is short pixel type
     castFilter->Update();
     vtkImageData* inputImageVTK = castFilter->GetOutput();
 
 
-    vtkMRMLNode* inputLabelNode = d->InputLabelVolumeMRMLNodeComboBox->currentNode();
+    vtkMRMLNode* inputLabelNode = d->InputLabelVolumeMRMLNodeComboBox->currentNode();    
     vtkMRMLVolumeNode* inputLabelVolumeNode = vtkMRMLVolumeNode::SafeDownCast(inputLabelNode);
-//    inputLabelVolumeNode->SetOrigin(inputVolumeNode->GetOrigin());
+
+    vtkImageData* inputLableImageVtkNoOrientationInfo = inputLabelVolumeNode->GetImageData();
+    inputLableImageVtkNoOrientationInfo->SetOrigin(inputImageVTK->GetOrigin());
+    inputLableImageVtkNoOrientationInfo->SetSpacing(inputImageVTK->GetSpacing());
+    inputLableImageVtkNoOrientationInfo->SetInformation(inputImageVTK->GetInformation());
+
+//    inputLabelVolumeNode->SetOrigin(inputVolumeNode->GetOrigin()); % these two lines does not add spatial/spacing info to the newly drawn label images.
 //    inputLabelVolumeNode->CopyOrientation(inputVolumeNode);
-    vtkSmartPointer<vtkImageCast> castFilter1 = vtkSmartPointer<vtkImageCast>::New();
-    castFilter1->SetInput(inputLabelVolumeNode->GetImageData());
+    vtkImageCast* castFilter1 = vtkImageCast::New();
+    castFilter1->SetInput(inputLableImageVtkNoOrientationInfo);
     castFilter1->SetOutputScalarTypeToShort(); // coz RSS input label is short pixel type
     castFilter1->Update();
     //    vtkImageData* inputLabelImageVtk = inputLabelVolumeNode->GetImageData();
@@ -302,7 +308,7 @@ void qSlicerRSSLoadableModuleModuleWidget::applyPushButtonClicked()
     // dbg, end
 
 
-    std::cout<<"11111111111111111111111111111 np = "<<m_rssPointer->mp_img->GetNumberOfPoints()<<std::endl<<std::flush;
+//    std::cout<<"11111111111111111111111111111 np = "<<m_rssPointer->mp_img->GetNumberOfPoints()<<std::endl<<std::flush;
 
     //    vtkSlicerApplicationLogic *appLogic = this->module()->appLogic();
     vtkSlicerApplicationLogic *appLogic = app->applicationLogic();
@@ -310,7 +316,7 @@ void qSlicerRSSLoadableModuleModuleWidget::applyPushButtonClicked()
     selectionNode->SetActiveLabelVolumeID(outputVolumeNode->GetID());
     appLogic->PropagateVolumeSelection();
 
-    std::cout<<"22222222222222222222222222 np = "<<m_rssPointer->mp_img->GetNumberOfPoints()<<std::endl<<std::flush;
+//    std::cout<<"22222222222222222222222222 np = "<<m_rssPointer->mp_img->GetNumberOfPoints()<<std::endl<<std::flush;
 
     // dbg
     {
@@ -425,11 +431,7 @@ vtkImageData* qSlicerRSSLoadableModuleModuleWidget::preprocessLabelMap(vtkImageD
 
 void qSlicerRSSLoadableModuleModuleWidget::oneLevelSetIteration()
 {
-    std::cout<<"3333333333333333333333333 np = "<<m_rssPointer->mp_label_mask->GetNumberOfPoints()<<std::endl<<std::flush;
-
-//    std::cout<<"3333333333333333333333333 np = "<<m_rssPointer->mp_img->GetNumberOfPoints()<<std::endl<<std::flush;
-//    std::cout<<"000000000000000000000 np = "<<m_rssPointer->mp_->GetNumberOfPoints()<<std::endl<<std::flush;
-
+//    std::cout<<"3333333333333333333333333 np = "<<m_rssPointer->mp_label_mask->GetNumberOfPoints()<<std::endl<<std::flush;
 
     if (m_rssPointer->m_done || m_evolutionPaused)
     {
@@ -437,7 +439,7 @@ void qSlicerRSSLoadableModuleModuleWidget::oneLevelSetIteration()
     }
     else
     {
-        std::cout<<"44444444444444444444 np = "<<m_rssPointer->mp_img->GetNumberOfPoints()<<std::endl<<std::flush;
+//        std::cout<<"44444444444444444444 np = "<<m_rssPointer->mp_img->GetNumberOfPoints()<<std::endl<<std::flush;
 
 
         m_rssPointer->inOneSegmentationIteration();
