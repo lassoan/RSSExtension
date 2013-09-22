@@ -116,8 +116,8 @@ protected:
     double m_maxVolume; // max physical volume, in mm^3
     double m_maxRunningTime; // in sec
 
-    static const double m_eps = 1e-10;
-    static const double m_pi = 3.14159265353238979;
+    double m_eps;
+    double m_pi;
 
 
 

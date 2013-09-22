@@ -379,7 +379,7 @@ vtkImageData* qSlicerRSSLoadableModuleModuleWidget::preprocessLabelMap(vtkImageD
     }
 
     std::sort(uniqueLabels.begin(), uniqueLabels.end() );
-    typename std::vector<short>::iterator itl = std::unique(uniqueLabels.begin(), uniqueLabels.end() );
+    std::vector<short>::iterator itl = std::unique(uniqueLabels.begin(), uniqueLabels.end() );
     uniqueLabels.resize( itl - uniqueLabels.begin() );
 
     if( uniqueLabels[0] != 0 )

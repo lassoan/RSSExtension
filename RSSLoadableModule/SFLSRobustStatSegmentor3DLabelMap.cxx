@@ -69,13 +69,13 @@ CSFLSRobustStatSegmentor3DLabelMap::setInputLabelImage(vtkImageData* l)
     }
 
 
-    //dbg
-    vtkMetaImageWriter* writer = vtkMetaImageWriter::New();
-    writer->SetFileName("/tmp/m_inputLabelImage.mhd");
-    writer->SetRAWFileName("/tmp/m_inputLabelImage.raw");
-    writer->SetInput(m_inputLabelImage);
-    writer->Write();
-    //dbg, end
+//    //dbg
+//    vtkMetaImageWriter* writer = vtkMetaImageWriter::New();
+//    writer->SetFileName("/tmp/m_inputLabelImage.mhd");
+//    writer->SetRAWFileName("/tmp/m_inputLabelImage.raw");
+//    writer->SetInput(m_inputLabelImage);
+//    writer->Write();
+//    //dbg, end
 
     return;
 }
@@ -97,10 +97,10 @@ CSFLSRobustStatSegmentor3DLabelMap::computeForce()
     double* cvForce = new double[ n ];
 
 
-    std::vector<typename CSFLSLayer::iterator> m_lzIterVct( n );
+    std::vector<CSFLSLayer::iterator> m_lzIterVct( n );
     {
         long iiizzz = 0;
-        for (typename CSFLSLayer::iterator itz = this->m_lz.begin(); itz != this->m_lz.end(); ++itz)
+        for (CSFLSLayer::iterator itz = this->m_lz.begin(); itz != this->m_lz.end(); ++itz)
             m_lzIterVct[iiizzz++] = itz;
     }
 
@@ -110,7 +110,7 @@ CSFLSRobustStatSegmentor3DLabelMap::computeForce()
     {
 //        std::cout<<i<<std::endl<<std::flush;
 
-        typename CSFLSLayer::iterator itz = m_lzIterVct[i];
+        CSFLSLayer::iterator itz = m_lzIterVct[i];
 
         long ix = itz->SFLSNodeComponent1;
         long iy = itz->SFLSNodeComponent2;
@@ -407,23 +407,23 @@ void CSFLSRobustStatSegmentor3DLabelMap::inOneSegmentationIteration()
         return;
     }
 
-    //dbg//
-    std::cout<<"In iteration "<<m_currentIteration<<std::endl<<std::flush;
-    //DBG//
+//    //dbg//
+//    std::cout<<"In iteration "<<m_currentIteration<<std::endl<<std::flush;
+//    //DBG//
 
 
-    // dbg
-    char mhdName[1000];
-    sprintf(mhdName, "/tmp/mp_label_mask-before-iteration-%d.mhd", m_currentIteration);
-    char rawName[1000];
-    sprintf(rawName, "/tmp/mp_label_mask-before-iteration-%d.raw", m_currentIteration);
+//    // dbg
+//    char mhdName[1000];
+//    sprintf(mhdName, "/tmp/mp_label_mask-before-iteration-%d.mhd", m_currentIteration);
+//    char rawName[1000];
+//    sprintf(rawName, "/tmp/mp_label_mask-before-iteration-%d.raw", m_currentIteration);
 
-    vtkMetaImageWriter* writer = vtkMetaImageWriter::New();
-    writer->SetFileName(mhdName);
-    writer->SetRAWFileName(rawName);
-    writer->SetInput(mp_label_mask);
-    writer->Write();
-    // dbg, end
+//    vtkMetaImageWriter* writer = vtkMetaImageWriter::New();
+//    writer->SetFileName(mhdName);
+//    writer->SetRAWFileName(rawName);
+//    writer->SetInput(mp_label_mask);
+//    writer->Write();
+//    // dbg, end
 
 
     float oldVoxelCount = this->m_insideVoxelCount;

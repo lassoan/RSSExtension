@@ -18,11 +18,9 @@ public:
 
     typedef CSFLSRobustStatSegmentor3DLabelMap Self;
 
-    //  typedef boost::shared_ptr< Self > Pointer;
-
     typedef SuperClassType::TPixel TPixel;
-    typedef typename SuperClassType::NodeType NodeType;
-    typedef typename SuperClassType::CSFLSLayer CSFLSLayer;
+    typedef SuperClassType::NodeType NodeType;
+    typedef SuperClassType::CSFLSLayer CSFLSLayer;
 
     /*================================================================================
     ctor */

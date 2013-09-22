@@ -32,6 +32,9 @@ CSFLSSegmentor3D::CSFLSSegmentor3D() : CSFLS()
 void
 CSFLSSegmentor3D::basicInit()
 {
+    m_eps = 1e-10;
+    m_pi = 3.14159265353238979;
+
     mp_img = 0;
     mp_label = 0;
     mp_mask = 0; // 0, non-0 mask for object
@@ -378,9 +381,9 @@ void CSFLSSegmentor3D::updateInsideVoxelCount()
 
     m_insideVolume = m_insideVoxelCount*m_dx*m_dy*m_dz;
 
-    //dbg
-    std::cout<<"m_insideVolume = "<<m_insideVolume<<std::endl;
-    //dbg, end
+//    //dbg
+//    std::cout<<"m_insideVolume = "<<m_insideVolume<<std::endl;
+//    //dbg, end
 
     return;
 }
