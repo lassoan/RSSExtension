@@ -3,12 +3,12 @@ cmake_minimum_required(VERSION 2.8.9)
 project(RSSExtension)
 
 #-----------------------------------------------------------------------------
-set(EXTENSION_HOMEPAGE "http://www.slicer.org/slicerWiki/index.php/Documentation/Nightly/Extensions/RSSExtension")
-set(EXTENSION_CATEGORY "Examples")
-set(EXTENSION_CONTRIBUTORS "Jean-Christophe Fillion-Robin (Kitware)")
-set(EXTENSION_DESCRIPTION "This is an example of extension bundling a loadable module")
+set(EXTENSION_HOMEPAGE "http://www.slicer.org/slicerWiki/index.php/Documentation/Nightly/Modules/RobustStatisticsSegmenter")
+set(EXTENSION_CATEGORY "Segmentation")
+set(EXTENSION_CONTRIBUTORS "Yi Gao (UAB), Ron Kikinis (BWH), Sylvain Bouix (BWH), Martha Shenton (BWH), Allen Tannenbaum (SBU)")
+set(EXTENSION_DESCRIPTION "User draw some initial seeds, this module perform an interative segmentation in 3D volume.")
 set(EXTENSION_ICONURL "http://viewvc.slicer.org/viewvc.cgi/Slicer4/trunk/Extensions/Testing/RSSExtension/RSSExtension.png?revision=21746&view=co")
-set(EXTENSION_SCREENSHOTURLS "http://wiki.slicer.org/slicerWiki/images/4/42/Slicer-r19441-RSSExtension-screenshot.png")
+set(EXTENSION_SCREENSHOTURLS "http://www.slicer.org/slicerWiki/images/f/f1/MeningiomaCase1RSSLabel.png")
 
 #-----------------------------------------------------------------------------
 find_package(Slicer REQUIRED)
