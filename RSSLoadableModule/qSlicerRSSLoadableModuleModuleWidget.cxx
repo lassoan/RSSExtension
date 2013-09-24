@@ -221,6 +221,7 @@ void qSlicerRSSLoadableModuleModuleWidget::applyPushButtonClicked()
     inputImageVTK->SetSpacing(inputVolumeNode->GetSpacing() );
     inputImageVTK->SetOrigin(inputVolumeNode->GetOrigin());
 
+
 //    double dx, dy, dz;
 //    inputVolumeNode->GetSpacing(dx, dy, dz);
 //    std::cout<<"dx, dy, dz = "<<dx<<'\t'<<dy<<'\t'<<dz<<'\n';

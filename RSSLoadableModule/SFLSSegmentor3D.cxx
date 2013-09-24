@@ -52,9 +52,9 @@ CSFLSSegmentor3D::basicInit()
     m_increment2 = 0;
 
     mp_img_ptr = 0;
-//    mp_label_ptr = 0;
-//    mp_mask_ptr = 0;
-//    mp_phi_ptr = 0;
+    //    mp_label_ptr = 0;
+    //    mp_mask_ptr = 0;
+    //    mp_phi_ptr = 0;
 
     m_dx = 1.0;
     m_dy = 1.0;
@@ -393,9 +393,9 @@ void CSFLSSegmentor3D::updateInsideVoxelCount()
 
     m_insideVolume = m_insideVoxelCount*m_dx*m_dy*m_dz;
 
-//    //dbg
-//    std::cout<<"m_insideVolume = "<<m_insideVolume<<std::endl;
-//    //dbg, end
+    //    //dbg
+    //    std::cout<<"m_insideVolume = "<<m_insideVolume<<std::endl;
+    //    //dbg, end
 
     return;
 }
@@ -421,20 +421,19 @@ void CSFLSSegmentor3D::oneStepLevelSetEvolution()
     scan Lz values [-2.5 -1.5)[-1.5 -.5)[-.5 .5](.5 1.5](1.5 2.5]
     ========                */
     {
-        long nz = m_lz.size();
-        std::vector<CSFLSLayer::iterator> m_lzIterVct( nz );
+        //        long nz = m_lz.size();
+        //        std::vector<CSFLSLayer::iterator> m_lzIterVct( nz );
+        //        {
+        //            long iiizzz = 0;
+        //            for (CSFLSLayer::iterator itz = m_lz.begin(); itz != m_lz.end(); ++itz)
+        //                m_lzIterVct[iiizzz++] = itz;
+        //        }
+
+        //
+        long itf = 0;
+
+        for (CSFLSLayer::iterator itz = m_lz.begin(); itz != m_lz.end(); ) // itz will increase inside the loop, NOT here
         {
-            long iiizzz = 0;
-            for (CSFLSLayer::iterator itz = m_lz.begin(); itz != m_lz.end(); ++itz)
-                m_lzIterVct[iiizzz++] = itz;
-        }
-
-        for (long iiizzz = 0; iiizzz < nz; ++iiizzz)
-        {
-            long itf = iiizzz;
-
-            CSFLSLayer::iterator itz = m_lzIterVct[iiizzz];
-
             long ix = itz->SFLSNodeComponent1;
             long iy = itz->SFLSNodeComponent2;
             long iz = itz->SFLSNodeComponent3;
@@ -442,7 +441,7 @@ void CSFLSSegmentor3D::oneStepLevelSetEvolution()
             LevelSetPixelType* phi_old_ptr = static_cast<LevelSetPixelType*>(mp_phi->GetScalarPointer(ix, iy, iz));
             LevelSetPixelType phi_old = phi_old_ptr[0];
 
-            LevelSetPixelType phi_new = phi_old + m_force[itf];
+            LevelSetPixelType phi_new = phi_old + m_force[itf++];
 
             /*----------------------------------------------------------------------
           Update the lists of pt who change the state, for faster
@@ -696,7 +695,6 @@ void CSFLSSegmentor3D::oneStepLevelSetEvolution()
         m_lz.push_back(*itSz);
         *(static_cast<LabelPixelType*>(mp_label->GetScalarPointer(ix, iy, iz))) = 0;
         *(static_cast<LabelPixelType*>(mp_label_mask->GetScalarPointer(ix, iy, iz))) = 1;
-
     }
 
 
@@ -853,22 +851,17 @@ void CSFLSSegmentor3D::oneStepLevelSetEvolution()
 
     /*--------------------------------------------------
     3.4 Scan Sn2     */
+    for (CSFLSLayer::iterator itSn2 = Sn2.begin(); itSn2 != Sn2.end(); ++itSn2)
     {
-        //debug
-        int aaa = 0;
-        for (CSFLSLayer::iterator itSn2 = Sn2.begin(); itSn2 != Sn2.end(); ++itSn2, ++aaa)
-        {
-            long ix = itSn2->SFLSNodeComponent1;
-            long iy = itSn2->SFLSNodeComponent2;
-            long iz = itSn2->SFLSNodeComponent3;
+        long ix = itSn2->SFLSNodeComponent1;
+        long iy = itSn2->SFLSNodeComponent2;
+        long iz = itSn2->SFLSNodeComponent3;
 
-            m_ln2.push_back(*itSn2);
+        m_ln2.push_back(*itSn2);
 
-            *(static_cast<LabelPixelType*>(mp_label->GetScalarPointer(ix, iy, iz))) = -2;
-            *(static_cast<LabelPixelType*>(mp_label_mask->GetScalarPointer(ix, iy, iz))) = 1;
-        }
+        *(static_cast<LabelPixelType*>(mp_label->GetScalarPointer(ix, iy, iz))) = -2;
+        *(static_cast<LabelPixelType*>(mp_label_mask->GetScalarPointer(ix, iy, iz))) = 1;
     }
-
 
 
     /*--------------------------------------------------
@@ -908,13 +901,13 @@ void CSFLSSegmentor3D::initializeLabel()
     mp_label->SetSpacing(mp_img->GetSpacing());
     mp_label->SetInformation(mp_img->GetInformation());
     //mp_label->SetExtent(mp_img->GetExtent());
-//#if VTK_MAJOR_VERSION <= 5
+    //#if VTK_MAJOR_VERSION <= 5
     mp_label->SetNumberOfScalarComponents(1);
     mp_label->SetScalarTypeToShort();
     mp_label->AllocateScalars();
-//#else
-//    mp_label->AllocateScalars(VTK_SHORT, 1);
-//#endif
+    //#else
+    //    mp_label->AllocateScalars(VTK_SHORT, 1);
+    //#endif
 
     LabelPixelType* mp_label_ptr = static_cast<LabelPixelType*>(mp_label->GetScalarPointer(0, 0, 0));
 
@@ -924,13 +917,13 @@ void CSFLSSegmentor3D::initializeLabel()
     mp_label_mask->SetSpacing(mp_img->GetSpacing());
     mp_label_mask->SetInformation(mp_img->GetInformation());
     //mp_label_mask->SetExtent(mp_img->GetExtent());
-//#if VTK_MAJOR_VERSION <= 5
+    //#if VTK_MAJOR_VERSION <= 5
     mp_label_mask->SetNumberOfScalarComponents(1);
     mp_label_mask->SetScalarTypeToShort();
     mp_label_mask->AllocateScalars();
-//#else
-//    mp_label_mask->AllocateScalars(VTK_SHORT, 1);
-//#endif
+    //#else
+    //    mp_label_mask->AllocateScalars(VTK_SHORT, 1);
+    //#endif
 
     LabelImagePixelType* mp_label_mask_pixel_ptr = static_cast<LabelImagePixelType*>(mp_label_mask->GetScalarPointer(0, 0, 0));
 
@@ -941,7 +934,7 @@ void CSFLSSegmentor3D::initializeLabel()
         mp_label_mask_pixel_ptr[i] = defaultLabel;
     }
 
-//    std::cout<<"mp_label_mask is initied\n"<<std::flush;
+    //    std::cout<<"mp_label_mask is initied\n"<<std::flush;
 
 
     //    for (int z = 0; z < size[2]; z++)
@@ -981,13 +974,13 @@ void CSFLSSegmentor3D::initializePhi()
     mp_phi->SetSpacing(mp_img->GetSpacing());
     mp_phi->SetInformation(mp_img->GetInformation());
 
-//#if VTK_MAJOR_VERSION <= 5
+    //#if VTK_MAJOR_VERSION <= 5
     mp_phi->SetNumberOfScalarComponents(1);
     mp_phi->SetScalarTypeToFloat();
     mp_phi->AllocateScalars();
-//#else
-//    mp_phi->AllocateScalars(VTK_FLOAT, 1);
-//#endif
+    //#else
+    //    mp_phi->AllocateScalars(VTK_FLOAT, 1);
+    //#endif
 
     int startIdx[] = {0, 0, 0};
     LevelSetPixelType* mp_phi_ptr = static_cast<LevelSetPixelType*>(mp_phi->GetScalarPointer(startIdx));
@@ -1030,20 +1023,20 @@ void CSFLSSegmentor3D::initializeSFLSFromMask()
     LabelPixelType* mp_label_pixel_ptr = 0;
     LabelPixelType* mp_label_mask_pixel_ptr = 0;
 
-//    {
-//      // dbg
-//      char mhdName[1000];
-//      sprintf(mhdName, "/tmp/mp_label_mask-initSFLS-%d.mhd", 1);
-//      char rawName[1000];
-//      sprintf(rawName, "/tmp/mp_label_mask-initSFLS-%d.raw", 1);
+    //    {
+    //      // dbg
+    //      char mhdName[1000];
+    //      sprintf(mhdName, "/tmp/mp_label_mask-initSFLS-%d.mhd", 1);
+    //      char rawName[1000];
+    //      sprintf(rawName, "/tmp/mp_label_mask-initSFLS-%d.raw", 1);
 
-//      vtkMetaImageWriter* writer = vtkMetaImageWriter::New();
-//      writer->SetFileName(mhdName);
-//      writer->SetRAWFileName(rawName);
-//      writer->SetInput(mp_label_mask);
-//      writer->Write();
-//      // dbg, end
-//    }
+    //      vtkMetaImageWriter* writer = vtkMetaImageWriter::New();
+    //      writer->SetFileName(mhdName);
+    //      writer->SetRAWFileName(rawName);
+    //      writer->SetInput(mp_label_mask);
+    //      writer->Write();
+    //      // dbg, end
+    //    }
 
     for (long iz = 0; iz < m_nz; ++iz)
     {
@@ -1305,20 +1298,20 @@ void CSFLSSegmentor3D::initializeSFLSFromMask()
         }
     }
 
-//    {
-//      // dbg
-//      char mhdName[1000];
-//      sprintf(mhdName, "/tmp/mp_label_mask-initSFLS-%d.mhd", 3);
-//      char rawName[1000];
-//      sprintf(rawName, "/tmp/mp_label_mask-initSFLS-%d.raw", 3);
+    //    {
+    //      // dbg
+    //      char mhdName[1000];
+    //      sprintf(mhdName, "/tmp/mp_label_mask-initSFLS-%d.mhd", 3);
+    //      char rawName[1000];
+    //      sprintf(rawName, "/tmp/mp_label_mask-initSFLS-%d.raw", 3);
 
-//      vtkMetaImageWriter* writer = vtkMetaImageWriter::New();
-//      writer->SetFileName(mhdName);
-//      writer->SetRAWFileName(rawName);
-//      writer->SetInput(mp_label_mask);
-//      writer->Write();
-//      // dbg, end
-//    }
+    //      vtkMetaImageWriter* writer = vtkMetaImageWriter::New();
+    //      writer->SetFileName(mhdName);
+    //      writer->SetRAWFileName(rawName);
+    //      writer->SetInput(mp_label_mask);
+    //      writer->Write();
+    //      // dbg, end
+    //    }
 
     //scan Lp1 to create Lp2
     for (CSFLSLayer::const_iterator it = m_lp1.begin(); it != m_lp1.end(); ++it)
@@ -1387,18 +1380,18 @@ void CSFLSSegmentor3D::initializeSFLSFromMask()
     }
 
     {
-      // dbg
-      char mhdName[1000];
-      sprintf(mhdName, "/tmp/mp_label-initSFLS-%d.mhd", 4);
-      char rawName[1000];
-      sprintf(rawName, "/tmp/mp_label-initSFLS-%d.raw", 4);
+        // dbg
+        char mhdName[1000];
+        sprintf(mhdName, "/tmp/mp_label-initSFLS-%d.mhd", 4);
+        char rawName[1000];
+        sprintf(rawName, "/tmp/mp_label-initSFLS-%d.raw", 4);
 
-      vtkMetaImageWriter* writer = vtkMetaImageWriter::New();
-      writer->SetFileName(mhdName);
-      writer->SetRAWFileName(rawName);
-      writer->SetInput(mp_label);
-      writer->Write();
-      // dbg, end
+        vtkMetaImageWriter* writer = vtkMetaImageWriter::New();
+        writer->SetFileName(mhdName);
+        writer->SetRAWFileName(rawName);
+        writer->SetInput(mp_label);
+        writer->Write();
+        // dbg, end
     }
 }
 
