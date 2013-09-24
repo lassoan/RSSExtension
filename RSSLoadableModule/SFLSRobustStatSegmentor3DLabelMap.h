@@ -91,7 +91,7 @@ protected:
     void getRobustStatistics(std::vector<TPixel>& samples, std::vector<float>& robustStat);
     void inputLableImageToSeeds();
     void seedToMask();
-    void dialteSeeds();
+//    void dialteSeeds();
     void getFeatureAroundSeeds();
     void estimateFeatureStdDevs();
 

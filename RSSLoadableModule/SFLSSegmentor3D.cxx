@@ -412,15 +412,6 @@ void CSFLSSegmentor3D::oneStepLevelSetEvolution()
     scan Lz values [-2.5 -1.5)[-1.5 -.5)[-.5 .5](.5 1.5](1.5 2.5]
     ========                */
     {
-        //        long nz = m_lz.size();
-        //        std::vector<CSFLSLayer::iterator> m_lzIterVct( nz );
-        //        {
-        //            long iiizzz = 0;
-        //            for (CSFLSLayer::iterator itz = m_lz.begin(); itz != m_lz.end(); ++itz)
-        //                m_lzIterVct[iiizzz++] = itz;
-        //        }
-
-        //
         long itf = 0;
 
         for (CSFLSLayer::iterator itz = m_lz.begin(); itz != m_lz.end(); ) // itz will increase inside the loop, NOT here

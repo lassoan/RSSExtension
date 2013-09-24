@@ -81,8 +81,6 @@ qSlicerRSSLoadableModuleModuleWidget::qSlicerRSSLoadableModuleModuleWidget(QWidg
     , d_ptr( new qSlicerRSSLoadableModuleModuleWidgetPrivate )
 {
     m_evolutionPaused = 0;
-
-    //    m_UIRefreshInterval = 201;
 }
 
 //-----------------------------------------------------------------------------
@@ -118,8 +116,8 @@ void qSlicerRSSLoadableModuleModuleWidget::onInputVolumeChanged(vtkMRMLNode* nod
 {
     if (node)
     {
-        qDebug("onInputVolumeChanged");
-        qDebug(node->GetName(), 100);
+//        qDebug("onInputVolumeChanged");
+//        qDebug(node->GetName(), 100);
 
         vtkMRMLScalarVolumeNode* scalarVolNode = vtkMRMLScalarVolumeNode::SafeDownCast(node);
         vtkImageData* vtkImg = scalarVolNode->GetImageData();

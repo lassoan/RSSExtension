@@ -72,43 +72,36 @@ CSFLSRobustStatSegmentor3DLabelMap::computeForce()
     double* kappaOnZeroLS = new double[ n ];
     double* cvForce = new double[ n ];
 
-
-    std::vector<CSFLSLayer::iterator> m_lzIterVct( n );
     {
-        long iiizzz = 0;
-        for (CSFLSLayer::iterator itz = this->m_lz.begin(); itz != this->m_lz.end(); ++itz)
-            m_lzIterVct[iiizzz++] = itz;
-    }
+        long i = 0;
 
-    for (long i = 0; i < n; ++i)
-    {
-        CSFLSLayer::iterator itz = m_lzIterVct[i];
+        for (CSFLSLayer::iterator itz = this->m_lz.begin(); itz != this->m_lz.end(); ++itz, ++i)
+        {
+            long ix = itz->SFLSNodeComponent1;
+            long iy = itz->SFLSNodeComponent2;
+            long iz = itz->SFLSNodeComponent3;
 
-        long ix = itz->SFLSNodeComponent1;
-        long iy = itz->SFLSNodeComponent2;
-        long iz = itz->SFLSNodeComponent3;
+            int idx[] = {ix, iy, iz};
 
-        int idx[] = {ix, iy, iz};
+            kappaOnZeroLS[i] = this->computeKappa(ix, iy, iz);
 
-        kappaOnZeroLS[i] = this->computeKappa(ix, iy, iz);
+            std::vector<FeatureImagePixelType> f(m_numberOfFeature);
 
-        std::vector<FeatureImagePixelType> f(m_numberOfFeature);
+            computeFeatureAt(idx, f);
 
-        computeFeatureAt(idx, f);
+            double a = -kernelEvaluationUsingPDF(f);
 
-        double a = -kernelEvaluationUsingPDF(f);
+            fmax = fmax>fabs(a)?fmax:fabs(a);
+            kappaMax = kappaMax>fabs(kappaOnZeroLS[i])?kappaMax:fabs(kappaOnZeroLS[i]);
 
-        fmax = fmax>fabs(a)?fmax:fabs(a);
-        kappaMax = kappaMax>fabs(kappaOnZeroLS[i])?kappaMax:fabs(kappaOnZeroLS[i]);
-
-        cvForce[i] = a;
+            cvForce[i] = a;
+        }
     }
 
 
     this->m_force.resize(n);
     for (long i = 0; i < n; ++i)
     {
-        //this->m_force.push_back(cvForce[i]/(fmax + 1e-10) +  (this->m_curvatureWeight)*kappaOnZeroLS[i]);
         this->m_force[i] = (1 - (this->m_curvatureWeight))*cvForce[i]/(fmax + 1e-10) \
                 +  (this->m_curvatureWeight)*kappaOnZeroLS[i]/(kappaMax + 1e-10);
     }
@@ -285,7 +278,7 @@ CSFLSRobustStatSegmentor3DLabelMap::computeFeatureAt(int idx[3], std::vector<Fea
         long iy = idx[1];
         long iz = idx[2];
 
-        TPixel* img_ptr = mp_img_ptr + iz*m_nx*m_ny + iy*m_nx + ix;
+        TPixel* img_ptr = mp_img_ptr + iz*m_increment2 + iy*m_increment1 + ix;
 
         for (long iiz = - m_statNeighborZ; iiz <= m_statNeighborZ; ++iiz)
         {
@@ -296,7 +289,6 @@ CSFLSRobustStatSegmentor3DLabelMap::computeFeatureAt(int idx[3], std::vector<Fea
                     if (0 <= ix-iix && ix+iix < this->m_nx && 0 <= iy-iiy && iy+iiy < this->m_ny && 0 <= iz-iiz && iz+iiz < this->m_nz)
                     {
                         TPixel tmp = img_ptr[iiz*m_increment2 + iiy*m_increment1 + iix*m_increment0];
-                        //                        TPixel tmp = *(static_cast<TPixel*>(mp_img->GetScalarPointer(iix, iiy, iiz)));
                         neighborIntensities.push_back(tmp);
                     }
                 }
@@ -517,72 +509,72 @@ CSFLSRobustStatSegmentor3DLabelMap
 }
 
 
-/* ============================================================ */
+///* ============================================================ */
 
-void
-CSFLSRobustStatSegmentor3DLabelMap
-::dialteSeeds()
-{
-    /* For each seed, add its 26 neighbors into the seed list. */
+//void
+//CSFLSRobustStatSegmentor3DLabelMap
+//::dialteSeeds()
+//{
+//    /* For each seed, add its 26 neighbors into the seed list. */
 
-    if (!(this->mp_img))
-    {
-        std::cerr<<"Error: set input image first.\n";
-        abort();
-    }
-
-
-
-    long n = m_seeds.size();
-    std::vector<std::vector<long> > newSeeds;
-
-    if (n == 0)
-    {
-        std::cerr << "Error: No seeds specified." << std::endl;
-        abort();
-    }
+//    if (!(this->mp_img))
+//    {
+//        std::cerr<<"Error: set input image first.\n";
+//        abort();
+//    }
 
 
-    for (long i = 0; i < n; ++i)
-    {
-        if (3 != m_seeds[i].size())
-        {
-            std::cerr<<"Error: 3 != m_seeds[i].size()\n";
-            abort();
-        }
 
-        long ix = m_seeds[i][0];
-        long iy = m_seeds[i][1];
-        long iz = m_seeds[i][2];
+//    long n = m_seeds.size();
+//    std::vector<std::vector<long> > newSeeds;
 
-        for (long iiz = iz - 1; iiz <= iz + 1; ++iiz)
-        {
-            for (long iiy = iy - 1; iiy <= iy + 1; ++iiy)
-            {
-                for (long iix = ix - 1; iix <= ix + 1; ++iix)
-                {
-                    if (0 <= iix && iix < this->m_nx && 0 <= iiy && iiy < this->m_ny && 0 <= iiz && iiz < this->m_nz)
-                    {
-                        /* Some locations may be added multiple times,
-                         if the original seeds are close. But I think
-                         this is fine */
+//    if (n == 0)
+//    {
+//        std::cerr << "Error: No seeds specified." << std::endl;
+//        abort();
+//    }
 
-                        std::vector<long> s(3);
-                        s[0] = iix;
-                        s[1] = iiy;
-                        s[2] = iiz;
 
-                        newSeeds.push_back(s);
-                    }
-                }
-            }
-        }
-    }
+//    for (long i = 0; i < n; ++i)
+//    {
+//        if (3 != m_seeds[i].size())
+//        {
+//            std::cerr<<"Error: 3 != m_seeds[i].size()\n";
+//            abort();
+//        }
 
-    m_seeds.assign(newSeeds.begin(), newSeeds.end() );
+//        long ix = m_seeds[i][0];
+//        long iy = m_seeds[i][1];
+//        long iz = m_seeds[i][2];
 
-    return;
-}
+//        for (long iiz = iz - 1; iiz <= iz + 1; ++iiz)
+//        {
+//            for (long iiy = iy - 1; iiy <= iy + 1; ++iiy)
+//            {
+//                for (long iix = ix - 1; iix <= ix + 1; ++iix)
+//                {
+//                    if (0 <= iix && iix < this->m_nx && 0 <= iiy && iiy < this->m_ny && 0 <= iiz && iiz < this->m_nz)
+//                    {
+//                        /* Some locations may be added multiple times,
+//                         if the original seeds are close. But I think
+//                         this is fine */
+
+//                        std::vector<long> s(3);
+//                        s[0] = iix;
+//                        s[1] = iiy;
+//                        s[2] = iiz;
+
+//                        newSeeds.push_back(s);
+//                    }
+//                }
+//            }
+//        }
+//    }
+
+//    m_seeds.assign(newSeeds.begin(), newSeeds.end() );
+
+//    return;
+//}
 
 
 /* ============================================================  */
