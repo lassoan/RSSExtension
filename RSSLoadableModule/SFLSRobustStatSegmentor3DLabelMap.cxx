@@ -205,6 +205,16 @@ CSFLSRobustStatSegmentor3DLabelMap::initFeatureImage()
         //        fimg->AllocateScalars(VTK_FLOAT, 1);
         //#endif
 
+        {
+            /// init fimg to 0
+            FeatureImagePixelType* fimg_ptr = static_cast<FeatureImagePixelType*>(fimg->GetScalarPointer(0, 0, 0));
+            long n = (this->m_nx)*(this->m_ny)*(this->m_nz);
+            for (long i = 0; i < n; i += m_increment0)
+            {
+                fimg_ptr[i] = 0.0;
+            }
+        }
+
         m_featureImageList.push_back(fimg);
     }
 
