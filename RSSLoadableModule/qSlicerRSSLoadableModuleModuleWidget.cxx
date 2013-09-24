@@ -211,6 +211,9 @@ void qSlicerRSSLoadableModuleModuleWidget::applyPushButtonClicked()
     std::cout<<"intensityHomogeneity = "<<intensityHomogeneity<<std::endl;
     std::cout<<"labelValue = "<<labelValue<<std::endl;
 
+    /**
+      * Convert the input image to a vtkImageData
+      */
     vtkMRMLNode* inputNode = d->InputVolumeMRMLNodeComboBox->currentNode();
     vtkMRMLVolumeNode* inputVolumeNode = vtkMRMLVolumeNode::SafeDownCast(inputNode);
     vtkImageCast* castFilter = vtkImageCast::New();
@@ -221,12 +224,9 @@ void qSlicerRSSLoadableModuleModuleWidget::applyPushButtonClicked()
     inputImageVTK->SetSpacing(inputVolumeNode->GetSpacing() );
     inputImageVTK->SetOrigin(inputVolumeNode->GetOrigin());
 
-
-//    double dx, dy, dz;
-//    inputVolumeNode->GetSpacing(dx, dy, dz);
-//    std::cout<<"dx, dy, dz = "<<dx<<'\t'<<dy<<'\t'<<dz<<'\n';
-
-
+    /**
+      * Convert the input label image to a vtkImageData
+      */
     vtkMRMLNode* inputLabelNode = d->InputLabelVolumeMRMLNodeComboBox->currentNode();    
     vtkMRMLVolumeNode* inputLabelVolumeNode = vtkMRMLVolumeNode::SafeDownCast(inputLabelNode);
 
@@ -235,8 +235,6 @@ void qSlicerRSSLoadableModuleModuleWidget::applyPushButtonClicked()
     inputLableImageVtkNoOrientationInfo->SetSpacing(inputImageVTK->GetSpacing());
     inputLableImageVtkNoOrientationInfo->SetInformation(inputImageVTK->GetInformation());
 
-//    inputLabelVolumeNode->SetOrigin(inputVolumeNode->GetOrigin()); % these two lines does not add spatial/spacing info to the newly drawn label images.
-//    inputLabelVolumeNode->CopyOrientation(inputVolumeNode);
     vtkImageCast* castFilter1 = vtkImageCast::New();
     castFilter1->SetInput(inputLableImageVtkNoOrientationInfo);
     castFilter1->SetOutputScalarTypeToShort(); // coz RSS input label is short pixel type
@@ -249,9 +247,10 @@ void qSlicerRSSLoadableModuleModuleWidget::applyPushButtonClicked()
     qSlicerApplication * app = qSlicerApplication::application();
 
     d->pauseButton->setEnabled(false);
-    //d->applyButton->setEnabled(false);
 
-    // do seg
+    /**
+      * Call the segmentation class to do the segmentation
+      */
     m_rssPointer = new CSFLSRobustStatSegmentor3DLabelMap();
     m_rssPointer->setImage(inputImageVTK);
     m_rssPointer->setInputLabelImage(newInputLabelImageVtk);
@@ -272,20 +271,23 @@ void qSlicerRSSLoadableModuleModuleWidget::applyPushButtonClicked()
     d->applyButton->setEnabled(false);
 
 
-//    // dbg
-//    {
-//      char mhdName[1000];
-//      sprintf(mhdName, "/tmp/mp_label_mask-here-%d.mhd", 1);
-//      char rawName[1000];
-//      sprintf(rawName, "/tmp/mp_label_mask-here-%d.raw", 1);
 
-//      vtkMetaImageWriter* writer = vtkMetaImageWriter::New();
-//      writer->SetFileName(mhdName);
-//      writer->SetRAWFileName(rawName);
-//      writer->SetInput(m_rssPointer->mp_label_mask);
-//      writer->Write();
-//    }
-//    // dbg, end
+
+
+    // dbg
+    {
+      char mhdName[1000];
+      sprintf(mhdName, "/tmp/mp_label_mask-doSegmenationBeforeIteration-%d.mhd", 1);
+      char rawName[1000];
+      sprintf(rawName, "/tmp/mp_label_mask-doSegmenationBeforeIteration-%d.raw", 1);
+
+      vtkMetaImageWriter* writer = vtkMetaImageWriter::New();
+      writer->SetFileName(mhdName);
+      writer->SetRAWFileName(rawName);
+      writer->SetInput(m_rssPointer->mp_label_mask);
+      writer->Write();
+    }
+    // dbg, end
 
     vtkMRMLNode* outputNode = d->OutputLabelVolumeMRMLNodeComboBox->currentNode();
     vtkMRMLScalarVolumeNode* outputVolumeNode = vtkMRMLScalarVolumeNode::SafeDownCast(outputNode);
