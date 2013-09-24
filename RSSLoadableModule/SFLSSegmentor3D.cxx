@@ -83,6 +83,16 @@ void CSFLSSegmentor3D::setNumIter(unsigned long n)
     m_numIter = n;
 }
 
+
+//void CSFLSSegmentor3D::setSpacing(double dx, double dy, double dz)
+//{
+//    m_dx = fabs(dx);
+//    m_dy = fabs(dy);
+//    m_dz = fabs(dz);
+
+//    return;
+//}
+
 /* ============================================================
    setImage    */
 
@@ -107,6 +117,8 @@ This should not happen if the images are freshly loaded from file. Buy may happe
         m_nz = size[2];
 
         img->GetSpacing(m_dx, m_dy, m_dz);
+
+        std::cout<<"Loadable Spacing = ("<<m_dx<<", "<<m_dy<<", "<<m_dz<<")\n";
     }
     else if ( m_nx != static_cast<long>(size[0]) || m_ny != static_cast<long>(size[1]) || static_cast<long>(size[2]) )
     {
@@ -896,13 +908,13 @@ void CSFLSSegmentor3D::initializeLabel()
     mp_label->SetSpacing(mp_img->GetSpacing());
     mp_label->SetInformation(mp_img->GetInformation());
     //mp_label->SetExtent(mp_img->GetExtent());
-#if VTK_MAJOR_VERSION <= 5
+//#if VTK_MAJOR_VERSION <= 5
     mp_label->SetNumberOfScalarComponents(1);
     mp_label->SetScalarTypeToShort();
     mp_label->AllocateScalars();
-#else
-    mp_label->AllocateScalars(VTK_SHORT, 1);
-#endif
+//#else
+//    mp_label->AllocateScalars(VTK_SHORT, 1);
+//#endif
 
     LabelPixelType* mp_label_ptr = static_cast<LabelPixelType*>(mp_label->GetScalarPointer(0, 0, 0));
 
@@ -912,16 +924,15 @@ void CSFLSSegmentor3D::initializeLabel()
     mp_label_mask->SetSpacing(mp_img->GetSpacing());
     mp_label_mask->SetInformation(mp_img->GetInformation());
     //mp_label_mask->SetExtent(mp_img->GetExtent());
-#if VTK_MAJOR_VERSION <= 5
+//#if VTK_MAJOR_VERSION <= 5
     mp_label_mask->SetNumberOfScalarComponents(1);
     mp_label_mask->SetScalarTypeToShort();
     mp_label_mask->AllocateScalars();
-#else
-    mp_label_mask->AllocateScalars(VTK_SHORT, 1);
-#endif
+//#else
+//    mp_label_mask->AllocateScalars(VTK_SHORT, 1);
+//#endif
 
     LabelImagePixelType* mp_label_mask_pixel_ptr = static_cast<LabelImagePixelType*>(mp_label_mask->GetScalarPointer(0, 0, 0));
-
 
     long n = size[0]*size[1]*size[2];
     for (long i = 0; i < n; i += m_increment0)
@@ -930,17 +941,7 @@ void CSFLSSegmentor3D::initializeLabel()
         mp_label_mask_pixel_ptr[i] = defaultLabel;
     }
 
-    std::cout<<"mp_label_mask is initied\n"<<std::flush;
-
-
-    // dbg
-    vtkMetaImageWriter* writer = vtkMetaImageWriter::New();
-    writer->SetFileName("/tmp/mp_label_mask-1.mhd");
-    writer->SetRAWFileName("/tmp/mp_label_mask-1.raw");
-    writer->SetInput(mp_label_mask);
-    writer->Write();
-    // dbg, end
-
+//    std::cout<<"mp_label_mask is initied\n"<<std::flush;
 
 
     //    for (int z = 0; z < size[2]; z++)
@@ -980,13 +981,13 @@ void CSFLSSegmentor3D::initializePhi()
     mp_phi->SetSpacing(mp_img->GetSpacing());
     mp_phi->SetInformation(mp_img->GetInformation());
 
-#if VTK_MAJOR_VERSION <= 5
+//#if VTK_MAJOR_VERSION <= 5
     mp_phi->SetNumberOfScalarComponents(1);
     mp_phi->SetScalarTypeToFloat();
     mp_phi->AllocateScalars();
-#else
-    mp_phi->AllocateScalars(VTK_FLOAT, 1);
-#endif
+//#else
+//    mp_phi->AllocateScalars(VTK_FLOAT, 1);
+//#endif
 
     int startIdx[] = {0, 0, 0};
     LevelSetPixelType* mp_phi_ptr = static_cast<LevelSetPixelType*>(mp_phi->GetScalarPointer(startIdx));
@@ -1029,20 +1030,20 @@ void CSFLSSegmentor3D::initializeSFLSFromMask()
     LabelPixelType* mp_label_pixel_ptr = 0;
     LabelPixelType* mp_label_mask_pixel_ptr = 0;
 
-    {
-      // dbg
-      char mhdName[1000];
-      sprintf(mhdName, "/tmp/mp_label_mask-initSFLS-%d.mhd", 1);
-      char rawName[1000];
-      sprintf(rawName, "/tmp/mp_label_mask-initSFLS-%d.raw", 1);
+//    {
+//      // dbg
+//      char mhdName[1000];
+//      sprintf(mhdName, "/tmp/mp_label_mask-initSFLS-%d.mhd", 1);
+//      char rawName[1000];
+//      sprintf(rawName, "/tmp/mp_label_mask-initSFLS-%d.raw", 1);
 
-      vtkMetaImageWriter* writer = vtkMetaImageWriter::New();
-      writer->SetFileName(mhdName);
-      writer->SetRAWFileName(rawName);
-      writer->SetInput(mp_label_mask);
-      writer->Write();
-      // dbg, end
-    }
+//      vtkMetaImageWriter* writer = vtkMetaImageWriter::New();
+//      writer->SetFileName(mhdName);
+//      writer->SetRAWFileName(rawName);
+//      writer->SetInput(mp_label_mask);
+//      writer->Write();
+//      // dbg, end
+//    }
 
     for (long iz = 0; iz < m_nz; ++iz)
     {
@@ -1090,21 +1091,6 @@ void CSFLSSegmentor3D::initializeSFLSFromMask()
 
 
 
-    {
-      // dbg
-      char mhdName[1000];
-      sprintf(mhdName, "/tmp/mp_label_mask-initSFLS-%d.mhd", 2);
-      char rawName[1000];
-      sprintf(rawName, "/tmp/mp_label_mask-initSFLS-%d.raw", 2);
-
-      vtkMetaImageWriter* writer = vtkMetaImageWriter::New();
-      writer->SetFileName(mhdName);
-      writer->SetRAWFileName(rawName);
-      writer->SetInput(mp_label_mask);
-      writer->Write();
-      // dbg, end
-    }
-
     m_insideVolume = m_insideVoxelCount*m_dx*m_dy*m_dz;
 
     //scan Lz to create Ln1 and Lp1
@@ -1134,7 +1120,6 @@ void CSFLSSegmentor3D::initializeSFLSFromMask()
             {
                 mp_label_pixel_ptr[m_increment0] = -1;
                 mp_phi_pixel_ptr[m_increment0] = -1.0;
-
                 mp_label_mask_pixel_ptr[m_increment0] = 1;
 
                 m_ln1.push_back( NodeType(idx[0], idx[1], idx[2]) );
@@ -1320,20 +1305,20 @@ void CSFLSSegmentor3D::initializeSFLSFromMask()
         }
     }
 
-    {
-      // dbg
-      char mhdName[1000];
-      sprintf(mhdName, "/tmp/mp_label_mask-initSFLS-%d.mhd", 3);
-      char rawName[1000];
-      sprintf(rawName, "/tmp/mp_label_mask-initSFLS-%d.raw", 3);
+//    {
+//      // dbg
+//      char mhdName[1000];
+//      sprintf(mhdName, "/tmp/mp_label_mask-initSFLS-%d.mhd", 3);
+//      char rawName[1000];
+//      sprintf(rawName, "/tmp/mp_label_mask-initSFLS-%d.raw", 3);
 
-      vtkMetaImageWriter* writer = vtkMetaImageWriter::New();
-      writer->SetFileName(mhdName);
-      writer->SetRAWFileName(rawName);
-      writer->SetInput(mp_label_mask);
-      writer->Write();
-      // dbg, end
-    }
+//      vtkMetaImageWriter* writer = vtkMetaImageWriter::New();
+//      writer->SetFileName(mhdName);
+//      writer->SetRAWFileName(rawName);
+//      writer->SetInput(mp_label_mask);
+//      writer->Write();
+//      // dbg, end
+//    }
 
     //scan Lp1 to create Lp2
     for (CSFLSLayer::const_iterator it = m_lp1.begin(); it != m_lp1.end(); ++it)
@@ -1404,14 +1389,14 @@ void CSFLSSegmentor3D::initializeSFLSFromMask()
     {
       // dbg
       char mhdName[1000];
-      sprintf(mhdName, "/tmp/mp_label_mask-initSFLS-%d.mhd", 4);
+      sprintf(mhdName, "/tmp/mp_label-initSFLS-%d.mhd", 4);
       char rawName[1000];
-      sprintf(rawName, "/tmp/mp_label_mask-initSFLS-%d.raw", 4);
+      sprintf(rawName, "/tmp/mp_label-initSFLS-%d.raw", 4);
 
       vtkMetaImageWriter* writer = vtkMetaImageWriter::New();
       writer->SetFileName(mhdName);
       writer->SetRAWFileName(rawName);
-      writer->SetInput(mp_label_mask);
+      writer->SetInput(mp_label);
       writer->Write();
       // dbg, end
     }

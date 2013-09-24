@@ -234,14 +234,14 @@ CSFLSRobustStatSegmentor3DLabelMap::initFeatureImage()
         fimg->SetOrigin(mp_img->GetOrigin());
         fimg->SetSpacing(mp_img->GetSpacing());
         fimg->SetInformation(mp_img->GetInformation());
-#if VTK_MAJOR_VERSION <= 5
+//#if VTK_MAJOR_VERSION <= 5
         //    std::cout<<"VTK_MAJOR_VERSION <= 5\n";
         fimg->SetNumberOfScalarComponents(1);
         fimg->SetScalarTypeToFloat();
         fimg->AllocateScalars();
-#else
-        fimg->AllocateScalars(VTK_FLOAT, 1);
-#endif
+//#else
+//        fimg->AllocateScalars(VTK_FLOAT, 1);
+//#endif
 
         m_featureImageList.push_back(fimg);
     }
@@ -267,14 +267,14 @@ CSFLSRobustStatSegmentor3DLabelMap::initFeatureComputedImage()
     m_featureComputed->SetOrigin(mp_img->GetOrigin());
     m_featureComputed->SetSpacing(mp_img->GetSpacing());
     m_featureComputed->SetInformation(mp_img->GetInformation());
-#if VTK_MAJOR_VERSION <= 5
+//#if VTK_MAJOR_VERSION <= 5
     //    std::cout<<"VTK_MAJOR_VERSION <= 5\n";
     m_featureComputed->SetNumberOfScalarComponents(1);
     m_featureComputed->SetScalarTypeToUnsignedChar();
     m_featureComputed->AllocateScalars();
-#else
-    m_featureComputed->AllocateScalars(VTK_UNSIGNED_CHAR, 1);
-#endif
+//#else
+//    m_featureComputed->AllocateScalars(VTK_UNSIGNED_CHAR, 1);
+//#endif
 
     int startIdx[] = {0, 0, 0};
     m_featureComputed_pixel_type* m_featureComputed_ptr = static_cast<m_featureComputed_pixel_type*>(m_featureComputed->GetScalarPointer(startIdx));
@@ -386,6 +386,22 @@ CSFLSRobustStatSegmentor3DLabelMap::doSegmenationBeforeIteration()
      * 3. mp_phi.
      */
     this->initializeSFLS();
+
+
+
+
+    // dbg
+    char mhdName[1000];
+    sprintf(mhdName, "/tmp/forDebugingRSS_%d.mhd", 0);
+    char rawName[1000];
+    sprintf(rawName, "/tmp/forDebugingRSS_%d.raw", 0);
+
+    vtkMetaImageWriter* writer = vtkMetaImageWriter::New();
+    writer->SetFileName(mhdName);
+    writer->SetRAWFileName(rawName);
+    writer->SetInput(mp_label);
+    writer->Write();
+    // dbg, end
 }
 
 // void
@@ -657,14 +673,14 @@ CSFLSRobustStatSegmentor3DLabelMap
     mp_mask->SetOrigin(mp_img->GetOrigin());
     mp_mask->SetSpacing(mp_img->GetSpacing());
     mp_mask->SetInformation(mp_img->GetInformation());
-#if VTK_MAJOR_VERSION <= 5
+//#if VTK_MAJOR_VERSION <= 5
     //    std::cout<<"VTK_MAJOR_VERSION <= 5\n";
     mp_mask->SetNumberOfScalarComponents(1);
     mp_mask->SetScalarTypeToUnsignedChar(); // MaskPixelType is uchar
     mp_mask->AllocateScalars();
-#else
-    mp_mask->AllocateScalars(VTK_UNSIGNED_CHAR, 1); // MaskPixelType is uchar
-#endif
+//#else
+//    mp_mask->AllocateScalars(VTK_UNSIGNED_CHAR, 1); // MaskPixelType is uchar
+//#endif
 
     for (long i = 0; i < n; ++i)
     {

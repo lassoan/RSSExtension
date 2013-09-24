@@ -42,6 +42,9 @@ public:
     void setImage(vtkImageData* img);
     void setMask(vtkImageData* mask);
 
+
+//    void setSpacing(double dx, double dy, double dz);
+
     virtual void computeForce() = 0;
 
     void normalizeForce();
