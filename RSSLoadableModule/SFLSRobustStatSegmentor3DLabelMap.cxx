@@ -1,6 +1,3 @@
-#ifndef SFLSRobustStatSegmentor3DLabelMap_txx_
-#define SFLSRobustStatSegmentor3DLabelMap_txx_
-
 #include "SFLSRobustStatSegmentor3DLabelMap.h"
 
 #include <algorithm>
@@ -9,20 +6,11 @@
 
 #include <limits>
 
-// //debug//
-#include <fstream>
-// //DEBUG//
-
 #include "vtkImageData.h"
-
 #include "vtkImageCast.h"
-
-// dbg
-#include "vtkMetaImageWriter.h"
 
 
 /* ============================================================   */
-
 void
 CSFLSRobustStatSegmentor3DLabelMap::basicInit()
 {
@@ -68,15 +56,6 @@ CSFLSRobustStatSegmentor3DLabelMap::setInputLabelImage(vtkImageData* l)
         abort();;
     }
 
-
-    //    //dbg
-    //    vtkMetaImageWriter* writer = vtkMetaImageWriter::New();
-    //    writer->SetFileName("/tmp/m_inputLabelImage.mhd");
-    //    writer->SetRAWFileName("/tmp/m_inputLabelImage.raw");
-    //    writer->SetInput(m_inputLabelImage);
-    //    writer->Write();
-    //    //dbg, end
-
     return;
 }
 
@@ -86,9 +65,6 @@ CSFLSRobustStatSegmentor3DLabelMap::setInputLabelImage(vtkImageData* l)
 void
 CSFLSRobustStatSegmentor3DLabelMap::computeForce()
 {
-    //    int np = mp_img->GetNumberOfPoints();
-    //    std::cout<<"0 np = "<<np<<std::endl<<std::flush;
-
     double fmax = std::numeric_limits<double>::min();
     double kappaMax = std::numeric_limits<double>::min();
 
@@ -104,36 +80,23 @@ CSFLSRobustStatSegmentor3DLabelMap::computeForce()
             m_lzIterVct[iiizzz++] = itz;
     }
 
-    //    std::cout<<"77777777777777777\n"<<std::flush;
-
     for (long i = 0; i < n; ++i)
     {
-        //        std::cout<<i<<std::endl<<std::flush;
-
         CSFLSLayer::iterator itz = m_lzIterVct[i];
 
         long ix = itz->SFLSNodeComponent1;
         long iy = itz->SFLSNodeComponent2;
         long iz = itz->SFLSNodeComponent3;
 
-        //        std::cout<<ix<<'\t'<<iy<<'\t'<<iz<<std::endl<<std::flush;
-
         int idx[] = {ix, iy, iz};
 
         kappaOnZeroLS[i] = this->computeKappa(ix, iy, iz);
-
-        //        std::cout<<"kappaOnZeroLS[i] = "<<kappaOnZeroLS[i]<<std::endl<<std::flush;
 
         std::vector<FeatureImagePixelType> f(m_numberOfFeature);
 
         computeFeatureAt(idx, f);
 
-        //        std::cout<<"feature = "<<f[0]<<'\t'<<f[1]<<'\t'<<f[2]<<std::endl<<std::flush;
-
         double a = -kernelEvaluationUsingPDF(f);
-
-        //        std::cout<<"a = "<<a<<std::endl<<std::flush;
-
 
         fmax = fmax>fabs(a)?fmax:fabs(a);
         kappaMax = kappaMax>fabs(kappaOnZeroLS[i])?kappaMax:fabs(kappaOnZeroLS[i]);
@@ -166,8 +129,6 @@ CSFLSRobustStatSegmentor3DLabelMap::inputLableImageToSeeds()
 
     std::cout<<"in-inputLableImageToSeeds "<<size[0]<<'\t'<<size[1]<<'\t'<<size[2]<<"\n";
 
-
-
     for (int iz = 0; iz < size[2]; ++iz)
     {
         for (int iy = 0; iy < size[1]; ++iy)
@@ -180,8 +141,6 @@ CSFLSRobustStatSegmentor3DLabelMap::inputLableImageToSeeds()
                     thisSeed[1] = iy;
                     thisSeed[2] = iz;
                     m_seeds.push_back(thisSeed);
-
-                    //                    std::cout<<"seed = "<<thisSeed[0]<<", "<<thisSeed[1]<<", "<<thisSeed[2]<<std::endl;
                 }
             }
         }
@@ -203,23 +162,6 @@ CSFLSRobustStatSegmentor3DLabelMap::getThingsReady()
     inputLableImageToSeeds();
 
     seedToMask();
-
-
-
-    {
-        // dbg
-        char mhdName[] = "/tmp/after-seedToMask.mhd";
-        char rawName[] = "/tmp/after-seedToMask.raw";
-
-        vtkMetaImageWriter* writer = vtkMetaImageWriter::New();
-        writer->SetFileName(mhdName);
-        writer->SetRAWFileName(rawName);
-        writer->SetInput(mp_mask);
-        writer->Write();
-        // dbg, end
-    }
-
-    //dialteSeeds();
 
     initFeatureComputedImage();
     initFeatureImage();
@@ -316,12 +258,8 @@ CSFLSRobustStatSegmentor3DLabelMap::computeFeatureAt(int idx[3], std::vector<Fea
     f.resize(m_numberOfFeature);
     m_featureComputed_pixel_type* m_featureComputed_idx_ptr = static_cast<m_featureComputed_pixel_type*>(m_featureComputed->GetScalarPointer(idx));
 
-    //    std::cout<<"m_featureComputed_idx_ptr[0] = "<<m_featureComputed_idx_ptr[0]<<std::endl<<std::flush;
-
     if (m_featureComputed_idx_ptr[0])
     {
-        //        std::cout<<"alive here\n"<<std::flush;
-
         // the feature at this pixel is computed, just retrive
         for (long i = 0; i < m_numberOfFeature; ++i)
         {
@@ -330,8 +268,6 @@ CSFLSRobustStatSegmentor3DLabelMap::computeFeatureAt(int idx[3], std::vector<Fea
     }
     else
     {
-        //        std::cout<<"alive else 0 \n"<<std::flush;
-
         // compute the feature
         std::vector< TPixel > neighborIntensities;
 
@@ -339,23 +275,7 @@ CSFLSRobustStatSegmentor3DLabelMap::computeFeatureAt(int idx[3], std::vector<Fea
         long iy = idx[1];
         long iz = idx[2];
 
-        //        std::cout<<ix<<'\t'<<iy<<'\t'<<iz<<std::endl<<std::flush;
-
-        //        std::cout<<"mp_img = "<<mp_img<<std::endl<<std::flush;
-        //        int np = mp_img->GetNumberOfPoints();
-        //        std::cout<<"np = "<<np<<std::endl<<std::flush;
-
-        //        std::cout<<mp_img->Get
-
-        //        TPixel* img_ptr = static_cast<TPixel*>(this->mp_img->GetScalarPointer(ix, iy, iz));
         TPixel* img_ptr = mp_img_ptr + iz*m_nx*m_ny + iy*m_nx + ix;
-
-        //        std::cout<<mp_img_ptr<<std::endl<<std::flush;
-        //        std::cout<<img_ptr<<std::endl<<std::flush;
-
-        //        std::cout<<"alive else 1 \n"<<std::flush;
-
-
 
         for (long iiz = - m_statNeighborZ; iiz <= m_statNeighborZ; ++iiz)
         {
@@ -372,8 +292,6 @@ CSFLSRobustStatSegmentor3DLabelMap::computeFeatureAt(int idx[3], std::vector<Fea
                 }
             }
         }
-
-        //        std::cout<<"alive else\n"<<std::flush;
 
         getRobustStatistics(neighborIntensities, f);
 
@@ -395,45 +313,12 @@ CSFLSRobustStatSegmentor3DLabelMap::doSegmenationBeforeIteration()
 
     getThingsReady();
 
-    //    std::ofstream f("/tmp/d.txt", std::ios_base::app);
-    //    f<<"m_maxRunningTime = "<<this->m_maxRunningTime<<std::endl;
-    //    f.close();
-
-
-
     /*============================================================
      * From the initial mask, generate: 1. SFLS, 2. mp_label and
      * 3. mp_phi.
      */
     this->initializeSFLS();
-
-
-
-
-    // dbg
-    char mhdName[1000];
-    sprintf(mhdName, "/tmp/forDebugingRSS_%d.mhd", 0);
-    char rawName[1000];
-    sprintf(rawName, "/tmp/forDebugingRSS_%d.raw", 0);
-
-    vtkMetaImageWriter* writer = vtkMetaImageWriter::New();
-    writer->SetFileName(mhdName);
-    writer->SetRAWFileName(rawName);
-    writer->SetInput(mp_label);
-    writer->Write();
-    // dbg, end
 }
-
-// void
-// CSFLSRobustStatSegmentor3DLabelMap::doSegmenationIteration()
-// {
-//     //douher::saveAsImage2< double >(mp_phi, "initPhi.nrrd");
-//     while(!m_done)        //for (unsigned int it = 0; ; ++it)
-//     {
-//         inOneSegmentationIteration();
-//     }
-// }
-
 
 
 void CSFLSRobustStatSegmentor3DLabelMap::inOneSegmentationIteration()
@@ -443,38 +328,13 @@ void CSFLSRobustStatSegmentor3DLabelMap::inOneSegmentationIteration()
         return;
     }
 
-    //    //dbg//
-    //    std::cout<<"In iteration "<<m_currentIteration<<std::endl<<std::flush;
-    //    //DBG//
-
-
-    //    // dbg
-    //    char mhdName[1000];
-    //    sprintf(mhdName, "/tmp/mp_label_mask-before-iteration-%d.mhd", m_currentIteration);
-    //    char rawName[1000];
-    //    sprintf(rawName, "/tmp/mp_label_mask-before-iteration-%d.raw", m_currentIteration);
-
-    //    vtkMetaImageWriter* writer = vtkMetaImageWriter::New();
-    //    writer->SetFileName(mhdName);
-    //    writer->SetRAWFileName(rawName);
-    //    writer->SetInput(mp_label_mask);
-    //    writer->Write();
-    //    // dbg, end
-
-
     float oldVoxelCount = this->m_insideVoxelCount;
 
     computeForce();
 
-    //    std::cout<<"444444444444444444444444444444\n"<<std::flush;
-
     this->normalizeForce();
 
-    //    std::cout<<"5555555555555555555"<<std::flush;
-
     this->oneStepLevelSetEvolution();
-
-    //    std::cout<<"66666666666666666666"<<std::flush;
 
 
     /*----------------------------------------------------------------------
@@ -508,104 +368,6 @@ void CSFLSRobustStatSegmentor3DLabelMap::inOneSegmentationIteration()
     mp_label_mask->Modified();
 }
 
-/* ============================================================  */
-
-// void
-// CSFLSRobustStatSegmentor3DLabelMap::doSegmenation()
-// {
-//     double startingTime = clock();
-
-//     getThingsReady();
-
-//     //    std::ofstream f("/tmp/d.txt", std::ios_base::app);
-//     //    f<<"m_maxRunningTime = "<<this->m_maxRunningTime<<std::endl;
-//     //    f.close();
-
-
-
-//     /*============================================================
-//    * From the initial mask, generate: 1. SFLS, 2. mp_label and
-//    * 3. mp_phi.
-//    */
-//     this->initializeSFLS();
-
-//     for (unsigned int it = 0; it < this->m_numIter; ++it)
-//         //for (unsigned int it = 0; ; ++it)
-//     {
-//         //dbg//
-//         std::cout<<"In iteration "<<it<<std::endl<<std::flush;
-//         //DBG//
-
-//         // keep current zero contour as history is required
-//         if (this->m_keepZeroLayerHistory)
-//         {
-//             (this->m_zeroLayerHistory).push_back(this->m_lz);
-//         }
-
-
-
-//         double oldVoxelCount = this->m_insideVoxelCount;
-
-//         computeForce();
-
-//         this->normalizeForce();
-
-//         this->oneStepLevelSetEvolution();
-
-
-
-//         /*----------------------------------------------------------------------
-//         If the level set stops growing, stop */
-//         this->updateInsideVoxelCount();
-//         if (it > 2 && oldVoxelCount >= this->m_insideVoxelCount)
-//         {
-//             std::ofstream f("/tmp/o.txt");
-//             f<<"stop grow\n";
-//             f.close();
-
-//             break;
-//         }
-
-//         /* If the level set stops growing, stop
-//          ----------------------------------------------------------------------*/
-
-
-//         /*----------------------------------------------------------------------
-//         If the inside physical volume exceed expected volume, stop */
-//         double volumeIn = (this->m_insideVoxelCount)*(this->m_dx)*(this->m_dy)*(this->m_dz);
-//         if (volumeIn > (this->m_maxVolume))
-//         {
-//             //          std::fstream f("/tmp/o.txt", std::ios_base::app);
-//             std::ofstream f("/tmp/o.txt");
-//             f<<"m_maxVolume = "<<this->m_maxVolume<<std::endl;
-//             f<<"volumeIn = "<<volumeIn<<std::endl;
-
-//             f<<"reach max volume\n";
-//             f.close();
-
-
-//             break;
-//         }
-//         /*If the inside physical volume exceed expected volume, stop
-//         ----------------------------------------------------------------------*/
-
-
-//         double ellapsedTime = (clock() - startingTime)/static_cast<double>(CLOCKS_PER_SEC);
-//         if (ellapsedTime > (this->m_maxRunningTime))
-//         {
-//             std::ofstream f("/tmp/o.txt");
-//             f<<"running time = "<<ellapsedTime<<std::endl;
-//             f<<"m_maxRunningTime = "<<this->m_maxRunningTime<<std::endl;
-//             f.close();
-
-//             break;
-//         }
-
-
-//     }
-
-//     return;
-// }
 
 
 /* ============================================================ */
@@ -726,11 +488,6 @@ CSFLSRobustStatSegmentor3DLabelMap
         long iy = m_seeds[i][1];
         long iz = m_seeds[i][2];
 
-
-        //        *(static_cast<MaskPixelType*>(mp_mask->GetScalarPointer(ix, iy, iz))) = 1;
-
-
-
         for (long iiz = iz - 1; iiz <= iz + 1; ++iiz)
         {
             for (long iiy = iy - 1; iiy <= iy + 1; ++iiy)
@@ -739,8 +496,6 @@ CSFLSRobustStatSegmentor3DLabelMap
                 {
                     if (0 <= iix && iix < this->m_nx && 0 <= iiy && iiy < this->m_ny && 0 <= iiz && iiz < this->m_nz)
                     {
-                        //                      TIndex idx = {iix, iiy, iiz};
-                        //                      this->mp_mask->SetPixel(idx, 1);
                         *(static_cast<MaskPixelType*>(mp_mask->GetScalarPointer(iix, iiy, iiz))) = 1;
                     }
                 }
@@ -955,7 +710,6 @@ CSFLSRobustStatSegmentor3DLabelMap::kernelEvaluation(const std::vector<FeatureIm
         pp /= n;
 
         p *= pp;
-        //p = p>pp?p:pp;
     }
 
     return p;
@@ -979,12 +733,6 @@ CSFLSRobustStatSegmentor3DLabelMap::setKernelWidthFactor(double f)
 
     m_kernelWidthFactor = f;
 
-
-    //   std::ofstream fil("/tmp/d.txt", std::ios_base::app);
-    //   fil<<"m_kernelWidthFactor = "<<m_kernelWidthFactor<<std::endl;
-    //   fil.close();
-
-
     return;
 }
 
@@ -994,11 +742,6 @@ CSFLSRobustStatSegmentor3DLabelMap::setKernelWidthFactor(double f)
 void
 CSFLSRobustStatSegmentor3DLabelMap::setIntensityHomogeneity(double h)
 {
-    //   std::ofstream fil("/tmp/d.txt", std::ios_base::app);
-    //   fil<<"intensity homogeneity = "<<h<<std::endl;
-    //   fil.close();
-
-
     double f = h*(30.0 - 0.3) + 0.3;
 
     setKernelWidthFactor(f);
@@ -1075,24 +818,5 @@ CSFLSRobustStatSegmentor3DLabelMap::computeMinMax()
         m_inputImageIntensityMax = m_inputImageIntensityMax>v?m_inputImageIntensityMax:v;
     }
 
-
-    //    for (int iz = 0; iz < size[2]; ++iz)
-    //    {
-    //        for (int iy = 0; iy < size[1]; ++iy)
-    //        {
-    //            for (int ix = 0; ix < size[0]; ++ix)
-    //            {
-    //                 = *(static_cast<TPixel*>(mp_img->GetScalarPointer(ix, iy, iz)));
-
-
-    //            }
-    //        }
-    //    }
-
-
-
     return;
 }
-
-
-#endif

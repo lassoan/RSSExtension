@@ -26,8 +26,6 @@
 #include "vtkMRMLNode.h"
 #include "vtkMRMLScalarVolumeNode.h"
 #include "vtkImageData.h"
-//#include "vtkITKImageWriter.h"
-//#include "vtkSmartPointer.h"
 #include "vtkImageCast.h"
 
 #include <iostream>
@@ -37,10 +35,7 @@
 
 #include "SFLSRobustStatSegmentor3DLabelMap.h"
 
-//#include "walltime.h"
-
 #include "vtkVersion.h"
-//#include "vtkSmartPointer.h"
 #include <vtkImageData.h>
 
 #include "vtkSlicerApplicationLogic.h"
@@ -59,9 +54,6 @@
 #include "qMRMLSliceView.h"
 #include "vtkRenderWindow.h"
 #include "vtkRenderWindowInteractor.h"
-
-// dbg
-#include "vtkMetaImageWriter.h"
 
 
 //-----------------------------------------------------------------------------
@@ -227,7 +219,7 @@ void qSlicerRSSLoadableModuleModuleWidget::applyPushButtonClicked()
     /**
       * Convert the input label image to a vtkImageData
       */
-    vtkMRMLNode* inputLabelNode = d->InputLabelVolumeMRMLNodeComboBox->currentNode();    
+    vtkMRMLNode* inputLabelNode = d->InputLabelVolumeMRMLNodeComboBox->currentNode();
     vtkMRMLVolumeNode* inputLabelVolumeNode = vtkMRMLVolumeNode::SafeDownCast(inputLabelNode);
 
     vtkImageData* inputLableImageVtkNoOrientationInfo = inputLabelVolumeNode->GetImageData();
@@ -271,24 +263,6 @@ void qSlicerRSSLoadableModuleModuleWidget::applyPushButtonClicked()
     d->applyButton->setEnabled(false);
 
 
-
-
-
-    // dbg
-    {
-      char mhdName[1000];
-      sprintf(mhdName, "/tmp/mp_label_mask-doSegmenationBeforeIteration-%d.mhd", 1);
-      char rawName[1000];
-      sprintf(rawName, "/tmp/mp_label_mask-doSegmenationBeforeIteration-%d.raw", 1);
-
-      vtkMetaImageWriter* writer = vtkMetaImageWriter::New();
-      writer->SetFileName(mhdName);
-      writer->SetRAWFileName(rawName);
-      writer->SetInput(m_rssPointer->mp_label_mask);
-      writer->Write();
-    }
-    // dbg, end
-
     vtkMRMLNode* outputNode = d->OutputLabelVolumeMRMLNodeComboBox->currentNode();
     vtkMRMLScalarVolumeNode* outputVolumeNode = vtkMRMLScalarVolumeNode::SafeDownCast(outputNode);
     outputVolumeNode->SetOrigin(inputVolumeNode->GetOrigin());
@@ -297,36 +271,14 @@ void qSlicerRSSLoadableModuleModuleWidget::applyPushButtonClicked()
     outputVolumeNode->SetAndObserveImageData(m_rssPointer->mp_label_mask);
     outputVolumeNode->SetLabelMap(1);
 
-    //    outputVolumeNode->SetAndObserveImageData(m_rssPointer->mp_label_mask);
-    //    outputVolumeNode->SetAndObserveImageData(m_rssPointer->mp_label);
-
     outputVolumeNode->SetDisplayVisibility(1);
 
-
-//    std::cout<<"11111111111111111111111111111 np = "<<m_rssPointer->mp_img->GetNumberOfPoints()<<std::endl<<std::flush;
 
     //    vtkSlicerApplicationLogic *appLogic = this->module()->appLogic();
     vtkSlicerApplicationLogic *appLogic = app->applicationLogic();
     vtkMRMLSelectionNode *selectionNode = appLogic->GetSelectionNode();
     selectionNode->SetActiveLabelVolumeID(outputVolumeNode->GetID());
     appLogic->PropagateVolumeSelection();
-
-//    std::cout<<"22222222222222222222222222 np = "<<m_rssPointer->mp_img->GetNumberOfPoints()<<std::endl<<std::flush;
-
-//    // dbg
-//    {
-//      char mhdName[1000];
-//      sprintf(mhdName, "/tmp/mp_label_mask-here-%d.mhd", 3);
-//      char rawName[1000];
-//      sprintf(rawName, "/tmp/mp_label_mask-here-%d.raw", 3);
-
-//      vtkMetaImageWriter* writer = vtkMetaImageWriter::New();
-//      writer->SetFileName(mhdName);
-//      writer->SetRAWFileName(rawName);
-//      writer->SetInput(m_rssPointer->mp_label_mask);
-//      writer->Write();
-//    }
-//    // dbg, end
 
     oneLevelSetIteration();
 
@@ -404,14 +356,14 @@ vtkImageData* qSlicerRSSLoadableModuleModuleWidget::preprocessLabelMap(vtkImageD
     newLabelMap->SetSpacing(originalLabelMap->GetSpacing());
     newLabelMap->SetInformation(originalLabelMap->GetInformation());
     //    newLabelMap->SetExtent(originalLabelMap->GetExtent());
-//#if VTK_MAJOR_VERSION <= 5
+    //#if VTK_MAJOR_VERSION <= 5
     //    std::cout<<"VTK_MAJOR_VERSION <= 5\n";
     newLabelMap->SetNumberOfScalarComponents(1);
     newLabelMap->SetScalarTypeToShort();
     newLabelMap->AllocateScalars();
-//#else
-//    newLabelMap->AllocateScalars(VTK_SHORT, 1);
-//#endif
+    //#else
+    //    newLabelMap->AllocateScalars(VTK_SHORT, 1);
+    //#endif
 
 
     short* newLabelMap_buffer_ptr = static_cast<short*>(newLabelMap->GetScalarPointer(startIdx));
@@ -426,23 +378,18 @@ vtkImageData* qSlicerRSSLoadableModuleModuleWidget::preprocessLabelMap(vtkImageD
 
 void qSlicerRSSLoadableModuleModuleWidget::oneLevelSetIteration()
 {
-//    std::cout<<"3333333333333333333333333 np = "<<m_rssPointer->mp_label_mask->GetNumberOfPoints()<<std::endl<<std::flush;
-
     if (m_rssPointer->m_done || m_evolutionPaused)
     {
         return;
     }
     else
     {
-//        std::cout<<"44444444444444444444 np = "<<m_rssPointer->mp_img->GetNumberOfPoints()<<std::endl<<std::flush;
-
-
         m_rssPointer->inOneSegmentationIteration();
 
         Q_D(qSlicerRSSLoadableModuleModuleWidget);
         vtkMRMLNode* outputNode = d->OutputLabelVolumeMRMLNodeComboBox->currentNode();
         outputNode->Modified();
 
-                QTimer::singleShot(m_UIRefreshInterval, this, SLOT(oneLevelSetIteration()));
+        QTimer::singleShot(m_UIRefreshInterval, this, SLOT(oneLevelSetIteration()));
     }
 }

@@ -1,6 +1,3 @@
-#ifndef SFLSSegmentor3D_hpp_
-#define SFLSSegmentor3D_hpp_
-
 #include "SFLSSegmentor3D.h"
 
 #include <algorithm>
@@ -9,16 +6,10 @@
 #include <csignal>
 #include <cassert>
 
-#include <fstream>
-
 #include <vtkVersion.h>
 #include <vtkImageData.h>
 
 #include "vtkImageCast.h"
-
-
-// dbg
-#include "vtkMetaImageWriter.h"
 
 
 CSFLSSegmentor3D::CSFLSSegmentor3D() : CSFLS()
@@ -1378,43 +1369,13 @@ void CSFLSSegmentor3D::initializeSFLSFromMask()
             m_lp2.push_back( NodeType(ix, iy, iz-1) );
         }
     }
-
-    {
-        // dbg
-        char mhdName[1000];
-        sprintf(mhdName, "/tmp/mp_label-initSFLS-%d.mhd", 4);
-        char rawName[1000];
-        sprintf(rawName, "/tmp/mp_label-initSFLS-%d.raw", 4);
-
-        vtkMetaImageWriter* writer = vtkMetaImageWriter::New();
-        writer->SetFileName(mhdName);
-        writer->SetRAWFileName(rawName);
-        writer->SetInput(mp_label);
-        writer->Write();
-        // dbg, end
-    }
 }
-
-///* getLevelSetFunction */
-//vtkImageData* CSFLSSegmentor3D::getLevelSetFunction()
-//{
-//    //   if (!m_done)
-//    //     {
-//    //       std::cerr<<"Error: not done.\n";
-//    //       raise(SIGABRT);
-//    //     }
-
-//    return mp_phi;
-//}
-
 
 /*============================================================
    computeKappa
    Compute kappa at a point in the zero level set           */
 double CSFLSSegmentor3D::computeKappa(long ix, long iy, long iz)
 {
-    //double kappa = 0;
-
     double dx = 0;
     double dy = 0;
     double dz = 0;
@@ -1455,8 +1416,6 @@ double CSFLSSegmentor3D::computeKappa(long ix, long iy, long iz)
 
     LevelSetPixelType* mp_phi_idx_ptr = static_cast<LevelSetPixelType*>(mp_phi->GetScalarPointer(idx));
     LevelSetPixelType tmp = mp_phi_idx_ptr[0];
-
-    //assert(!isnan(tmp));
 
     if (xok)
     {
@@ -1515,11 +1474,5 @@ double CSFLSSegmentor3D::computeKappa(long ix, long iy, long iz)
 
     double k = (dxx*(dy2 + dz2) + dyy*(dx2 + dz2) + dzz*(dx2 + dy2) - 2*dx*dy*dxy - 2*dx*dz*dxz - 2*dy*dz*dyz)/(dx2 + dy2 + dz2 + m_eps);
 
-    //assert(!isnan(k));
-
     return k;
 }
-
-
-
-#endif
