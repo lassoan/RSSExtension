@@ -925,20 +925,6 @@ void CSFLSSegmentor3D::initializeLabel()
         mp_label_mask_pixel_ptr[i] = defaultLabel;
     }
 
-    //    std::cout<<"mp_label_mask is initied\n"<<std::flush;
-
-
-    //    for (int z = 0; z < size[2]; z++)
-    //    {
-    //        for (int y = 0; y < size[1]; y++)
-    //        {
-    //            for (int x = 0; x < size[0]; x++)
-    //            {
-    //                *(static_cast<LabelPixelType*>(mp_label->GetScalarPointer(x,y,z))) = defaultLabel;
-    //            }
-    //        }
-    //    }
-
 
     return;
 }
@@ -1013,21 +999,6 @@ void CSFLSSegmentor3D::initializeSFLSFromMask()
     LevelSetPixelType* mp_phi_pixel_ptr = 0;
     LabelPixelType* mp_label_pixel_ptr = 0;
     LabelPixelType* mp_label_mask_pixel_ptr = 0;
-
-    //    {
-    //      // dbg
-    //      char mhdName[1000];
-    //      sprintf(mhdName, "/tmp/mp_label_mask-initSFLS-%d.mhd", 1);
-    //      char rawName[1000];
-    //      sprintf(rawName, "/tmp/mp_label_mask-initSFLS-%d.raw", 1);
-
-    //      vtkMetaImageWriter* writer = vtkMetaImageWriter::New();
-    //      writer->SetFileName(mhdName);
-    //      writer->SetRAWFileName(rawName);
-    //      writer->SetInput(mp_label_mask);
-    //      writer->Write();
-    //      // dbg, end
-    //    }
 
     for (long iz = 0; iz < m_nz; ++iz)
     {
@@ -1458,7 +1429,7 @@ double CSFLSSegmentor3D::computeKappa(long ix, long iy, long iz)
 
     if(xok && zok)
     {
-        dxy = 0.25*(mp_phi_idx_ptr[m_increment0 + m_increment2]\
+        dxz = 0.25*(mp_phi_idx_ptr[m_increment0 + m_increment2]\
                     + mp_phi_idx_ptr[-m_increment0 - m_increment2]\
                     - mp_phi_idx_ptr[m_increment0 - m_increment2]\
                     - mp_phi_idx_ptr[-m_increment0 + m_increment2])/(m_dx*m_dz);
@@ -1466,7 +1437,7 @@ double CSFLSSegmentor3D::computeKappa(long ix, long iy, long iz)
 
     if(yok && zok)
     {
-        dxy = 0.25*(mp_phi_idx_ptr[m_increment1 + m_increment2]\
+        dyz = 0.25*(mp_phi_idx_ptr[m_increment1 + m_increment2]\
                     + mp_phi_idx_ptr[-m_increment1 - m_increment2]\
                     - mp_phi_idx_ptr[m_increment1 - m_increment2]\
                     - mp_phi_idx_ptr[-m_increment1 + m_increment2])/(m_dy*m_dz);
