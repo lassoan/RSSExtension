@@ -266,7 +266,7 @@ bool CSFLSSegmentor3D::getPhiOfTheNbhdWhoIsClosestToZeroLevelInLayerCloserToZero
             foundNbhd = true;
         }
 
-        if ( (iz-1 >= 0) && mp_label_this_ptr[m_increment2] == mylevel-1 )
+        if ( (iz-1 >= 0) && mp_label_this_ptr[-m_increment2] == mylevel-1 )
         {
             itsPhi = mp_phi_this_ptr[-m_increment2];
             thePhi = thePhi<itsPhi?thePhi:itsPhi;
