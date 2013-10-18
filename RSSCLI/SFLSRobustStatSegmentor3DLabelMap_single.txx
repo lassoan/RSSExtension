@@ -871,11 +871,6 @@ CSFLSRobustStatSegmentor3DLabelMap<TPixel>
 
   computeMinMax(); // so we have the range of all pdfs
 
-// #ifndef NDEBUG
-//   std::cout<<"m_inputImageIntensityMin = "<<m_inputImageIntensityMin<<std::endl;
-//   std::cout<<"m_inputImageIntensityMax = "<<m_inputImageIntensityMax<<std::endl;
-// #endif
-
   long n = m_seeds.size();
   for( long ifeature = 0; ifeature < m_numberOfFeature; ++ifeature )
     {
@@ -883,19 +878,10 @@ CSFLSRobustStatSegmentor3DLabelMap<TPixel>
     // assumption: TPixel are of integer types.
 
     double stdDev = m_kernelStddev[ifeature] / m_kernelWidthFactor; // /10 as in Eric's appendix
-
-    // std::cout<<"kernel sigma of "<<ifeature<<"-th feature is "<<stdDev<<std::endl;
-
-// #ifndef NDEBUG
-//       std::cout<<"stdDev of "<<ifeature<<"-th feature = "<<stdDev<<std::endl;
-// #endif
-
-//       //#ifndef NDEBUG
-//       std::ofstream df("/tmp/detail.txt");
-//       //#endif
-
     double var2 = -1.0 / (2 * stdDev * stdDev);
     double c = 1.0 / sqrt(2 * (vnl_math::pi) ) / stdDev;
+
+#pragma omp parallel for
     for( TPixel a = m_inputImageIntensityMin; a <= m_inputImageIntensityMax; ++a )
       {
       long ia = static_cast<long>(a - m_inputImageIntensityMin);
