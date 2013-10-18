@@ -99,37 +99,47 @@ CSFLSRobustStatSegmentor3DLabelMap<TPixel>
       }
     }
 
-// #ifndef NDEBUG
-//     std::ofstream ff("/tmp/force.txt");
-// #endif
-  for( long i = 0; i < n; ++i )
+#pragma omp parallel
     {
-    typename CSFLSLayer::iterator itz = m_lzIterVct[i];
+      double fmaxOfThisThread = std::numeric_limits<double>::min();
+      double kappaMaxOfThisThread = std::numeric_limits<double>::min();
 
-    long ix = (*itz)[0];
-    long iy = (*itz)[1];
-    long iz = (*itz)[2];
+#pragma omp for
+      for( long i = 0; i < n; ++i )
+        {
+          typename CSFLSLayer::iterator itz = m_lzIterVct[i];
 
-    TIndex idx = {{ix, iy, iz}};
+          long ix = (*itz)[0];
+          long iy = (*itz)[1];
+          long iz = (*itz)[2];
 
-    kappaOnZeroLS[i] = this->computeKappa(ix, iy, iz);
+          TIndex idx = {{ix, iy, iz}};
 
-    std::vector<double> f(m_numberOfFeature);
+          kappaOnZeroLS[i] = this->computeKappa(ix, iy, iz);
 
-    computeFeatureAt(idx, f);
+          std::vector<double> f(m_numberOfFeature);
 
-    // double a = -kernelEvaluation(f);
-    double a = -kernelEvaluationUsingPDF(f);
+          computeFeatureAt(idx, f);
 
-    fmax = fmax > fabs(a) ? fmax : fabs(a);
-    kappaMax = kappaMax > fabs(kappaOnZeroLS[i]) ? kappaMax : fabs(kappaOnZeroLS[i]);
+          // double a = -kernelEvaluation(f);
+          double a = -kernelEvaluationUsingPDF(f);
 
-    cvForce[i] = a;
+          fmax = fmax > fabs(a) ? fmax : fabs(a);
+          kappaMax = kappaMax > fabs(kappaOnZeroLS[i]) ? kappaMax : fabs(kappaOnZeroLS[i]);
+
+          cvForce[i] = a;
+        }
+
+#pragma omp critical
+      {
+        fmax = fmax>fmaxOfThisThread?fmax:fmaxOfThisThread;
+        kappaMax = kappaMax>kappaMaxOfThisThread?kappaMax:kappaMaxOfThisThread;
+      }
     }
 
   // std::cout<<"fmax = "<<fmax<<std::endl;
 
-  this->m_force.resize(n);
+    this->m_force.resize(n);
     if ( this->m_bUseRejectionMask )
       {
       // mask restriction. Force the force to zero if it is in a mask region
@@ -142,7 +152,7 @@ CSFLSRobustStatSegmentor3DLabelMap<TPixel>
         long ix = (*itz)[0];
         long iy = (*itz)[1];
         long iz = (*itz)[2];
-          
+
         TIndex idx = {{ix, iy, iz}};
 
         if ( this->mp_rejectionMask->GetPixel( idx ) != 0 )
