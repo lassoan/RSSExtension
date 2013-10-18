@@ -7,6 +7,12 @@ set(MODULE_INCLUDE_DIRECTORIES
   )
 
 set(MODULE_SRCS
+    labelMapPreprocessor.h
+    SFLS.h
+    SFLSSegmentor3D.h
+    SFLSSegmentor3D.txx
+    SFLSRobustStatSegmentor3DLabelMap_single.h
+    SFLSRobustStatSegmentor3DLabelMap_single.txx
   )
 
 set(MODULE_TARGET_LIBRARIES
