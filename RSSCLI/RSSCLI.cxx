@@ -7,7 +7,10 @@
 #include "itkImageFileReader.h"
 #include "itkImageFileWriter.h"
 
-#include "labelMapPreprocessor.h"
+#include "itkImageRegionConstIterator.h"
+#include "itkImageRegionIterator.h"
+
+//#include "labelMapPreprocessor.h"
 
 // Use an anonymous namespace to keep class types and function names
 // from colliding when module is used as shared object module.  Every
@@ -16,6 +19,57 @@
 //
 namespace
 {
+
+template <typename InputLabelImageType>
+bool
+preprocessInputLabelImage(const InputLabelImageType* inputLabelImage, typename InputLabelImageType::PixelType labelOfInterest, \
+                          typename InputLabelImageType::Pointer& labelImageOnlyContainsTarget, \
+                          typename InputLabelImageType::Pointer& rejectionLabelImage)
+{
+  labelImageOnlyContainsTarget = InputLabelImageType::New();
+  labelImageOnlyContainsTarget->SetRegions(inputLabelImage->GetLargestPossibleRegion());
+  labelImageOnlyContainsTarget->Allocate();
+  labelImageOnlyContainsTarget->FillBuffer(0);
+  labelImageOnlyContainsTarget->CopyInformation(inputLabelImage);
+
+  rejectionLabelImage = InputLabelImageType::New();
+  rejectionLabelImage->SetRegions(inputLabelImage->GetLargestPossibleRegion());
+  rejectionLabelImage->Allocate();
+  rejectionLabelImage->FillBuffer(0);
+  rejectionLabelImage->CopyInformation(inputLabelImage);
+
+  typedef itk::ImageRegionConstIterator<InputLabelImageType> ImageRegionConstIteratorType;
+  ImageRegionConstIteratorType cIt(inputLabelImage, inputLabelImage->GetLargestPossibleRegion());
+  cIt.GoToBegin();
+
+  typedef itk::ImageRegionIterator<InputLabelImageType> ImageRegionIteratorType;
+  ImageRegionIteratorType itL(labelImageOnlyContainsTarget, labelImageOnlyContainsTarget->GetLargestPossibleRegion());
+  itL.GoToBegin();
+
+  typedef itk::ImageRegionIterator<InputLabelImageType> ImageRegionIteratorType;
+  ImageRegionIteratorType itR(rejectionLabelImage, rejectionLabelImage->GetLargestPossibleRegion());
+  itR.GoToBegin();
+
+  bool useRejectionLabel = false;
+
+  for (; !cIt.IsAtEnd(); ++cIt, ++itL, ++itR)
+    {
+      typename InputLabelImageType::PixelType l = cIt.Get();
+      if (l == labelOfInterest)
+        {
+          itL.Set(1);
+        }
+      else if (l != 0)
+        {
+          // other labels, not including 0,  are for rejection. 0 is for un-known.
+          useRejectionLabel = true;
+          itR.Set(1);
+        }
+    }
+
+  return useRejectionLabel;
+}
+
 
 template <typename TPixel>
 itk::Image<short, 3>::Pointer
@@ -112,28 +166,32 @@ int main(int argc, char* * argv)
     }
 
   // preprocess label map (labelImg, the naming is confusing.....)
-  LabelImage_t::Pointer newLabelMap = preprocessLabelMap<LabelImage_t::PixelType>(labelImg, labelValue);
+  //LabelImage_t::Pointer newLabelMap = preprocessLabelMap<LabelImage_t::PixelType>(labelImg, labelValue);
 
+  LabelImage_t::Pointer labelImageOnlyContainsTarget;
+  LabelImage_t::Pointer rejectionLabelImage;
 
-  typedef itk::ImageFileReader< LabelImage_t > RejctionMaskReader_t;
-  RejctionMaskReader_t::Pointer rejctionReader = RejctionMaskReader_t::New();
+  bool bUseRejctionLabelImage = preprocessInputLabelImage<LabelImage_t>(labelImg, labelValue, labelImageOnlyContainsTarget, rejectionLabelImage);
+
+  // typedef itk::ImageFileReader< LabelImage_t > RejctionMaskReader_t;
+  // RejctionMaskReader_t::Pointer rejctionReader = RejctionMaskReader_t::New();
 
   if ( bUseRejctionLabelImage )
     {
     std::cout << "Using rejection mask." << std::endl;
 
-    rejctionReader->SetFileName( rejectionlabelImageFileName.c_str() );
+    // rejctionReader->SetFileName( rejectionlabelImageFileName.c_str() );
 
-    try
-      {
-      rejctionReader->Update();
-      }
-    catch ( itk::ExceptionObject &err)
-      {
-      std::cerr<< "ExceptionObject caught !" << std::endl; 
-      std::cerr<< err << std::endl; 
-      raise(SIGABRT);
-      }
+    // try
+    //   {
+    //   rejctionReader->Update();
+    //   }
+    // catch ( itk::ExceptionObject &err)
+    //   {
+    //   std::cerr<< "ExceptionObject caught !" << std::endl; 
+    //   std::cerr<< err << std::endl; 
+    //   raise(SIGABRT);
+    //   }
     }
 
 
@@ -143,7 +201,8 @@ int main(int argc, char* * argv)
 
   seg.setNumIter(10000); // a large enough number, s.t. will not be stoped by this creteria.
   seg.setMaxVolume(expectedVolume);
-  seg.setInputLabelImage(newLabelMap);
+  seg.setInputLabelImage(labelImageOnlyContainsTarget);
+
 
   // seg.setNumIter(numOfIteration);
   seg.setMaxRunningTime(maxRunningTime);
@@ -153,7 +212,7 @@ int main(int argc, char* * argv)
 
   if ( bUseRejctionLabelImage )
     {
-    seg.setRejectionMask( rejctionReader->GetOutput() );
+    seg.setRejectionMask( rejectionLabelImage );
     }
 
 
@@ -200,7 +259,7 @@ int main(int argc, char* * argv)
 
   typedef itk::Image<short, 3> MaskImageType;
 
-  MaskImageType::Pointer finalMask = getFinalMask<float>(seg.mp_phi, labelValue, 2.0);
+  MaskImageType::Pointer finalMask = getFinalMask<float>(seg.mp_phi, labelValue, 1.0);
   finalMask->CopyInformation(img);
 
   typedef itk::ImageFileWriter<MaskImageType> WriterType;

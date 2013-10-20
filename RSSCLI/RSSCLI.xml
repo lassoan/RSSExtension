@@ -56,8 +56,8 @@
     <integer>
       <name>labelValue</name>
       <longflag>labelValue</longflag>
-      <description><![CDATA[Label value of the output image]]></description>
-      <label>Output Label Value</label>
+      <description><![CDATA[Label of interest. This is the label user want to segment in the input label image (which may contain several labels values). Also this value will be indicating the target in the output image]]></description>
+      <label>Label of interest</label>
       <default>1</default>
       <constraints>
         <minimum>1</minimum>
@@ -95,20 +95,6 @@
       <index>1</index>
       <description><![CDATA[Label image for initialization]]></description>
     </image>
-    <image type="label">
-      <name>rejectionlabelImageFileName</name>
-      <label>Rejection Label Image</label>
-      <channel>input</channel>
-      <index>2</index>
-      <description><![CDATA[Contour will NOT evolution at where this image > 0]]></description>
-    </image>
-    <boolean>
-      <name>bUseRejctionLabelImage</name>
-      <longflag>useRejctionLabelImage</longflag>
-      <label>Use rejection mask</label>
-      <description>If set will LS evolution will use the evolution mask.</description>
-      <default>false</default>
-    </boolean>
     <image type="label">
       <name>segmentedImageFileName</name>
       <label>Output Volume</label>

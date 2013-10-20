@@ -39,6 +39,8 @@ CSFLSRobustStatSegmentor3DLabelMap<TPixel>
   m_inputImageIntensityMin = 0;
   m_inputImageIntensityMax = 0;
 
+  m_labelOfInterest = 1;
+
   return;
 }
 
@@ -75,6 +77,17 @@ CSFLSRobustStatSegmentor3DLabelMap<TPixel>
     std::cerr << "Error: image sizes do not match with label image size.\n";
     raise(SIGABRT);
     }
+
+  return;
+}
+
+/* ============================================================  */
+template <typename TPixel>
+void
+CSFLSRobustStatSegmentor3DLabelMap<TPixel>
+::setLabelOfInterest(typename TLabelImage::PixelType loi)
+{
+  m_labelOfInterest = loi;
 
   return;
 }
@@ -233,6 +246,7 @@ CSFLSRobustStatSegmentor3DLabelMap<TPixel>
    2. Compute feature at each point
    3. Extract feature at/around the seeds
   */
+  checkIfLabelOfInterestExist();
 
   inputLableImageToSeeds();
 
@@ -251,6 +265,36 @@ CSFLSRobustStatSegmentor3DLabelMap<TPixel>
 
   return;
 }
+
+/* ============================================================  */
+template <typename TPixel>
+void
+CSFLSRobustStatSegmentor3DLabelMap<TPixel>
+::checkIfLabelOfInterestExist()
+{
+  typedef itk::ImageRegionConstIterator<TLabelImage> ImageRegionConstIteratorType;
+  ImageRegionConstIteratorType it(m_inputLabelImage, m_inputLabelImage->GetLargestPossibleRegion());
+
+  bool loiExistInInputLabelImage = false;
+
+  for (it.GoToBegin(); !it.IsAtEnd(); ++it)
+    {
+      if (it.Get() == m_labelOfInterest)
+        {
+          loiExistInInputLabelImage = true;
+          break;
+        }
+    }
+
+  if (!loiExistInInputLabelImage)
+    {
+      std::cerr<<"Error: label of interest does not exist in input label image.\n";
+      abort();
+    }
+
+  return;
+}
+
 
 /* ============================================================ */
 template <typename TPixel>
