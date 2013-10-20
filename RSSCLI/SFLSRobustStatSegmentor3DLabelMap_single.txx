@@ -8,6 +8,8 @@
 
 #include <limits>
 
+#include "omp.h"
+
 // //debug//
 // #include "cArrayOp.h"
 #include <fstream>
@@ -144,6 +146,7 @@ CSFLSRobustStatSegmentor3DLabelMap<TPixel>
       {
       // mask restriction. Force the force to zero if it is in a mask region
 
+#pragma omp parallel for
       for (long i = 0; i < n; ++i)
         {
 
@@ -155,28 +158,29 @@ CSFLSRobustStatSegmentor3DLabelMap<TPixel>
 
         TIndex idx = {{ix, iy, iz}};
 
-        if ( this->mp_rejectionMask->GetPixel( idx ) != 0 )
-          {
-          this->m_force[i] = 0;  // in mask, don't continue evolving here
-          std::cout<<"rejected! \n"<<std::flush;
-          }
-        else
-          {
-          //this->m_force.push_back(cvForce[i]/(fmax + 1e-10) +  (this->m_curvatureWeight)*kappaOnZeroLS[i]);
-          this->m_force[i] = (1 - (this->m_curvatureWeight))*cvForce[i]/(fmax + 1e-10) \
-            +  (this->m_curvatureWeight)*kappaOnZeroLS[i]/(kappaMax + 1e-10);
-          }
-        }
+        this->m_force[i] = (this->mp_rejectionMask->GetPixel( idx ) == 0)*(1 - (this->m_curvatureWeight))*cvForce[i]/(fmax + 1e-10) \
+          +  (this->m_curvatureWeight)*kappaOnZeroLS[i]/(kappaMax + 1e-10);
 
+        // if ( this->mp_rejectionMask->GetPixel( idx ) != 0 )
+        //   {
+        //   this->m_force[i] = 0;  // in mask, don't continue evolving here
+        //   //std::cout<<"rejected! \n"<<std::flush;
+        //   }
+        // else
+        //   {
+        //   //this->m_force.push_back(cvForce[i]/(fmax + 1e-10) +  (this->m_curvatureWeight)*kappaOnZeroLS[i]);
+        //   }
+        }
       }
     else
       { // no mask restriction for the rejection
-      for (long i = 0; i < n; ++i)
-        {
-        //this->m_force.push_back(cvForce[i]/(fmax + 1e-10) +  (this->m_curvatureWeight)*kappaOnZeroLS[i]);
-        this->m_force[i] = (1 - (this->m_curvatureWeight))*cvForce[i]/(fmax + 1e-10) \
-          +  (this->m_curvatureWeight)*kappaOnZeroLS[i]/(kappaMax + 1e-10);
-        }
+#pragma omp parallel for
+        for (long i = 0; i < n; ++i)
+          {
+            //this->m_force.push_back(cvForce[i]/(fmax + 1e-10) +  (this->m_curvatureWeight)*kappaOnZeroLS[i]);
+            this->m_force[i] = (1 - (this->m_curvatureWeight))*cvForce[i]/(fmax + 1e-10) \
+              +  (this->m_curvatureWeight)*kappaOnZeroLS[i]/(kappaMax + 1e-10);
+          }
       }
 
   delete[] kappaOnZeroLS;

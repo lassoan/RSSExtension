@@ -12,6 +12,7 @@
 
 #include "itkImageRegionIteratorWithIndex.h"
 
+#include "omp.h"
 
 // dbg
 #include "itkImageFileWriter.h"
@@ -446,8 +447,11 @@ CSFLSSegmentor3D<TPixel>
         m_lzIterVct[iiizzz++] = itz;
         }
       }
+
     //    for (CSFLSLayer::iterator itz = m_lz.begin(); itz != m_lz.end(); ++itf)
-    // #pragma omp parallel for
+
+      /// Using this will cause some racing conditions. But faster speed may be more important?
+#pragma omp parallel for
     for( long iiizzz = 0; iiizzz < nz; ++iiizzz )
       {
       long itf = iiizzz;
