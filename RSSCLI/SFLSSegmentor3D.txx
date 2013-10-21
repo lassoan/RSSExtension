@@ -451,7 +451,7 @@ CSFLSSegmentor3D<TPixel>
     //    for (CSFLSLayer::iterator itz = m_lz.begin(); itz != m_lz.end(); ++itf)
 
       /// Using this will cause some racing conditions. But faster speed may be more important?
-#pragma omp parallel for
+      //#pragma omp parallel for
     for( long iiizzz = 0; iiizzz < nz; ++iiizzz )
       {
       long itf = iiizzz;
