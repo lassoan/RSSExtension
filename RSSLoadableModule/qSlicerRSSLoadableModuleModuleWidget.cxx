@@ -24,7 +24,7 @@
 
 // add by YG
 #include "vtkMRMLNode.h"
-#include "vtkMRMLScalarVolumeNode.h"
+#include "vtkMRMLLabelMapVolumeNode.h"
 #include "vtkImageData.h"
 #include "vtkImageCast.h"
 
@@ -140,7 +140,7 @@ void qSlicerRSSLoadableModuleModuleWidget::onInputLabelVolumeChanged(vtkMRMLNode
         qDebug("onInputLabelVolumeChanged");
         qDebug(node->GetName(), 100);
 
-        vtkMRMLScalarVolumeNode* scalarVolNode = vtkMRMLScalarVolumeNode::SafeDownCast(node);
+        vtkMRMLLabelMapVolumeNode* scalarVolNode = vtkMRMLLabelMapVolumeNode::SafeDownCast(node);
         vtkImageData* vtkImg = scalarVolNode->GetImageData();
 
         double spacing[3];
