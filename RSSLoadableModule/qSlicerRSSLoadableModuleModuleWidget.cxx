@@ -207,7 +207,7 @@ void qSlicerRSSLoadableModuleModuleWidget::applyPushButtonClicked()
     vtkMRMLNode* inputNode = d->InputVolumeMRMLNodeComboBox->currentNode();
     vtkMRMLVolumeNode* inputVolumeNode = vtkMRMLVolumeNode::SafeDownCast(inputNode);
     vtkImageCast* castFilter = vtkImageCast::New();
-    castFilter->SetInput(inputVolumeNode->GetImageData());
+    castFilter->SetInputData(inputVolumeNode->GetImageData());
     castFilter->SetOutputScalarTypeToShort();// coz RSS input label is short pixel type
     castFilter->Update();
     vtkImageData* inputImageVTK = castFilter->GetOutput();
@@ -226,7 +226,7 @@ void qSlicerRSSLoadableModuleModuleWidget::applyPushButtonClicked()
     inputLableImageVtkNoOrientationInfo->SetInformation(inputImageVTK->GetInformation());
 
     vtkImageCast* castFilter1 = vtkImageCast::New();
-    castFilter1->SetInput(inputLableImageVtkNoOrientationInfo);
+    castFilter1->SetInputData(inputLableImageVtkNoOrientationInfo);
     castFilter1->SetOutputScalarTypeToShort(); // coz RSS input label is short pixel type
     castFilter1->Update();
     //    vtkImageData* inputLabelImageVtk = inputLabelVolumeNode->GetImageData();
@@ -261,13 +261,11 @@ void qSlicerRSSLoadableModuleModuleWidget::applyPushButtonClicked()
     d->applyButton->setEnabled(false);
 
 
-    vtkMRMLNode* outputNode = d->OutputLabelVolumeMRMLNodeComboBox->currentNode();
-    vtkMRMLScalarVolumeNode* outputVolumeNode = vtkMRMLScalarVolumeNode::SafeDownCast(outputNode);
+    vtkMRMLLabelMapVolumeNode* outputVolumeNode = vtkMRMLLabelMapVolumeNode::SafeDownCast(d->OutputLabelVolumeMRMLNodeComboBox->currentNode());
     outputVolumeNode->SetOrigin(inputVolumeNode->GetOrigin());
     outputVolumeNode->CopyOrientation(inputVolumeNode);
 
     outputVolumeNode->SetAndObserveImageData(m_rssPointer->mp_label_mask);
-    outputVolumeNode->SetLabelMap(1);
 
     outputVolumeNode->SetDisplayVisibility(1);
 
@@ -350,19 +348,11 @@ vtkImageData* qSlicerRSSLoadableModuleModuleWidget::preprocessLabelMap(vtkImageD
     // 4.
     vtkImageData* newLabelMap = vtkImageData::New();
     newLabelMap->SetDimensions(size);
+    //    newLabelMap->SetExtent(originalLabelMap->GetExtent());
     newLabelMap->SetOrigin(originalLabelMap->GetOrigin());
     newLabelMap->SetSpacing(originalLabelMap->GetSpacing());
     newLabelMap->SetInformation(originalLabelMap->GetInformation());
-    //    newLabelMap->SetExtent(originalLabelMap->GetExtent());
-    //#if VTK_MAJOR_VERSION <= 5
-    //    std::cout<<"VTK_MAJOR_VERSION <= 5\n";
-    newLabelMap->SetNumberOfScalarComponents(1);
-    newLabelMap->SetScalarTypeToShort();
-    newLabelMap->AllocateScalars();
-    //#else
-    //    newLabelMap->AllocateScalars(VTK_SHORT, 1);
-    //#endif
-
+    newLabelMap->AllocateScalars(VTK_SHORT, 1);
 
     short* newLabelMap_buffer_ptr = static_cast<short*>(newLabelMap->GetScalarPointer(startIdx));
 

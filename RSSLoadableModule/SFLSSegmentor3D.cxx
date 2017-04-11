@@ -90,7 +90,7 @@ void CSFLSSegmentor3D::setNumIter(unsigned long n)
 void CSFLSSegmentor3D::setImage(vtkImageData* img)
 {
     vtkImageCast* castFilter = vtkImageCast::New();
-    castFilter->SetInput(img);
+    castFilter->SetInputData(img);
     castFilter->SetOutputScalarTypeToShort();
     castFilter->Update();
 
@@ -879,17 +879,11 @@ void CSFLSSegmentor3D::initializeLabel()
 
     mp_label = vtkImageData::New();
     mp_label->SetDimensions(size);
+    //mp_label->SetExtent(mp_img->GetExtent());
     mp_label->SetOrigin(mp_img->GetOrigin());
     mp_label->SetSpacing(mp_img->GetSpacing());
     mp_label->SetInformation(mp_img->GetInformation());
-    //mp_label->SetExtent(mp_img->GetExtent());
-    //#if VTK_MAJOR_VERSION <= 5
-    mp_label->SetNumberOfScalarComponents(1);
-    mp_label->SetScalarTypeToShort();
-    mp_label->AllocateScalars();
-    //#else
-    //    mp_label->AllocateScalars(VTK_SHORT, 1);
-    //#endif
+    mp_label->AllocateScalars(VTK_SHORT, 1);
 
     LabelPixelType* mp_label_ptr = static_cast<LabelPixelType*>(mp_label->GetScalarPointer(0, 0, 0));
 
@@ -898,14 +892,7 @@ void CSFLSSegmentor3D::initializeLabel()
     mp_label_mask->SetOrigin(mp_img->GetOrigin());
     mp_label_mask->SetSpacing(mp_img->GetSpacing());
     mp_label_mask->SetInformation(mp_img->GetInformation());
-    //mp_label_mask->SetExtent(mp_img->GetExtent());
-    //#if VTK_MAJOR_VERSION <= 5
-    mp_label_mask->SetNumberOfScalarComponents(1);
-    mp_label_mask->SetScalarTypeToShort();
-    mp_label_mask->AllocateScalars();
-    //#else
-    //    mp_label_mask->AllocateScalars(VTK_SHORT, 1);
-    //#endif
+    mp_label_mask->AllocateScalars(VTK_SHORT, 1);
 
     LabelImagePixelType* mp_label_mask_pixel_ptr = static_cast<LabelImagePixelType*>(mp_label_mask->GetScalarPointer(0, 0, 0));
 
@@ -942,13 +929,7 @@ void CSFLSSegmentor3D::initializePhi()
     mp_phi->SetSpacing(mp_img->GetSpacing());
     mp_phi->SetInformation(mp_img->GetInformation());
 
-    //#if VTK_MAJOR_VERSION <= 5
-    mp_phi->SetNumberOfScalarComponents(1);
-    mp_phi->SetScalarTypeToFloat();
-    mp_phi->AllocateScalars();
-    //#else
-    //    mp_phi->AllocateScalars(VTK_FLOAT, 1);
-    //#endif
+    mp_phi->AllocateScalars(VTK_FLOAT, 1);
 
     int startIdx[] = {0, 0, 0};
     LevelSetPixelType* mp_phi_ptr = static_cast<LevelSetPixelType*>(mp_phi->GetScalarPointer(startIdx));

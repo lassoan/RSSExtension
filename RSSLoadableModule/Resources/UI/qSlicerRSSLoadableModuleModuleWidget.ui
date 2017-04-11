@@ -121,7 +121,7 @@
        <widget class="qMRMLNodeComboBox" name="OutputLabelVolumeMRMLNodeComboBox">
         <property name="nodeTypes">
          <stringlist>
-          <string>vtkMRMLScalarVolumeNode</string>
+          <string>vtkMRMLLabelMapVolumeNode</string>
          </stringlist>
         </property>
         <property name="editEnabled">

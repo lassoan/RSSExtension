@@ -19,9 +19,11 @@
 #include "vtkSlicerRSSLoadableModuleLogic.h"
 
 // MRML includes
+#include "vtkMRMLScene.h"
 
 // VTK includes
 #include <vtkNew.h>
+#include <vtkIntArray.h>
 
 // STD includes
 #include <cassert>
